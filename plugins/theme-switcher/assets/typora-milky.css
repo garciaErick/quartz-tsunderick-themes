@@ -1,0 +1,44 @@
+/*
+ * Typora "Milky Quartz" palette port (light mode).
+ * Source: https://github.com/troennes/quartz-theme-typora (theme/quartz-milky.css)
+ *   --background-color: white      -> --light
+ *   --border-color: #ddd           -> --lightgray
+ *   --accent-color: #aeb1b5        -> --gray
+ *   --control-text-color: #667176  -> --darkgray
+ *   --header-color: #222324        -> --dark
+ *   --link-color: #2077b2          -> --secondary
+ *   (derived) 35% tint of link     -> --tertiary
+ *   (derived) link-tinted alpha    -> --highlight
+ *
+ * Palette-only port: all Obsidian alias variables in Quartz derive from
+ * these nine canonical vars (see quartz/util/theme.ts), so no aliases are
+ * needed. Values are static hex/rgba (never calc()) so mermaid stays happy.
+ * Unlayered `:root:root` outspecifies the baked-in theme's layered
+ * `@layer obsidian-theme { :root:root { ... } }` rules.
+ */
+
+:root:root {
+  --light: #ffffff;
+  --lightgray: #dddddd;
+  --gray: #aeb1b5;
+  --darkgray: #667176;
+  --dark: #222324;
+  --secondary: #2077b2;
+  --tertiary: #6ea7cd;
+  --highlight: rgba(32, 119, 178, 0.12);
+  --textHighlight: #fff23688;
+
+  /* accent HSL computed from --secondary #2077b2 (hsl(204, 70%, 41%)) */
+  --accent-h: 204;
+  --accent-s: 70%;
+  --accent-l: 41%;
+}
+
+/* Light-only palette: hide the light/dark toggle while active (same
+   approach @quartz-themes/core uses for build-time single-mode themes). */
+button.darkmode {
+  display: none !important;
+}
+:root {
+  color-scheme: light;
+}

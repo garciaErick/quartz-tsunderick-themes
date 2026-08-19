@@ -1,24 +1,11 @@
-# 青春 indie-seishun
-
-Indie as in indie games, and Seishun (青春) as in youth, the springtime of life. Let's develop games to our hearts content.
-
-![@azva01 Aseprite - Fishing Animation](https://raw.githubusercontent.com/Indie-Seishun/indie-seishun/main/game/assets/E_Fishing%20animation%20NB_04.gif)
-
-## Official Releases and useful links
-
-- main (Stable version, should contribute via Pull-requests ONLY): <https://ashfallsoftware.itch.io/brews-n-battles>
-- test: <https://ashfallsoftware.itch.io/brews-n-battles-test>
-- slimmario: <https://ashfallsoftware.itch.io/brews-n-battles-robomario>
-- luiz: <https://ashfallsoftware.itch.io/brews-n-battles-mean-bean>
-- azva01: <https://ashfallsoftware.itch.io/brews-n-battles-azva01>
-- tsunderick: <https://ashfallsoftware.itch.io/brews-n-battles-tsunderick>
-- [Google drive assets directory](https://drive.google.com/drive/folders/1s8s1BdY9zDL8Y7R4P6kIyMAnNoetW9KQ?usp=drive_link)
+# New employee guide
 
 ## TOC
 
 <!-- mtoc-start -->
 
-* [Setup](#setup)
+* [Setup your environment](#setup-your-environment)
+  * [Devs](#devs)
   * [1. Install Godot 4.6.2](#1-install-godot-462)
   * [2. Clone the Repository](#2-clone-the-repository)
   * [3. Workspace Setup (Optional)](#3-workspace-setup-optional)
@@ -42,7 +29,9 @@ Indie as in indie games, and Seishun (青春) as in youth, the springtime of lif
 
 <!-- mtoc-end -->
 
-## Setup
+## Setup your environment
+
+### Devs
 
 ### 1. Install Godot 4.6.2
 
@@ -52,8 +41,8 @@ Download and install **Godot 4.6.2 stable** from [godotengine.org](https://godot
 
 ```bash
 # --recurse-submodules fetches the Importality addon automatically
-git clone --recurse-submodules https://github.com/Indie-Seishun/indie-seishun.git
-cd indie-seishun
+git clone --recurse-submodules https://github.com/Ashfall-Software/brews-n-battles.git
+cd brews-n-battles
 ```
 
 > **Forgot `--recurse-submodules`?** No problem — run this inside the repo:
@@ -64,7 +53,10 @@ cd indie-seishun
 
 ### 3. Workspace Setup (Optional)
 
-The project supports a multi-worktree (branches) workspace so each branch (`main`, `docs`, `tsunderick`, `robomario`, etc.) has its own directory. The script also initializes git submodules in the main repo and each worktree automatically.
+The project supports a multi-worktree (branches) workspace
+so each branch (`main`, `docs`, `tsunderick`, `robomario`, etc.) has its own
+directory. The script also initializes git submodules in the main
+repo and each worktree automatically.
 
 ```bash
 # From the cloned repo root (which becomes main/)
@@ -223,38 +215,38 @@ To see our full documentation just head over to the [docs](./docs/) directory
 
 The full listing is located here [/docs/how-to/](./docs/how-to/)
 
-| Guide | Description |
-|-------|-------------|
-| [Pre-commit Setup](docs/how-to/1-pre-commit-setup.md) | Set up automated GDScript formatting and linting via Git pre-commit hooks |
-| [Multi-branch Workspace Setup](docs/how-to/2-multi-branch-workspace-setup.md) | Set up multi-worktree workspace with the setup script |
-| [Create a Pull Request](docs/how-to/3-create-a-pull-request-pr.md) | How to create PRs, handle review feedback, and squash commits before merge |
-| [Sync with main guide](docs/how-to/4-sync-with-main-guide.md) | Git workflow scripts for syncing your branch with main |
-| [Upload a file via GitHub Web](docs/how-to/5-upload-file-via-github-web.md) | Create directories, upload, or replace asset files directly from the GitHub website |
-| [Update Importality Submodule](docs/how-to/x-update-importality-submodule.md) | Pull upstream updates for the Importality addon |
+| Guide                                                                         | Description                                                                         |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [Pre-commit Setup](docs/how-to/1-pre-commit-setup.md)                         | Set up automated GDScript formatting and linting via Git pre-commit hooks           |
+| [Multi-branch Workspace Setup](docs/how-to/2-multi-branch-workspace-setup.md) | Set up multi-worktree workspace with the setup script                               |
+| [Create a Pull Request](docs/how-to/3-create-a-pull-request-pr.md)            | How to create PRs, handle review feedback, and squash commits before merge          |
+| [Sync with main guide](docs/how-to/4-sync-with-main-guide.md)                 | Git workflow scripts for syncing your branch with main                              |
+| [Upload a file via GitHub Web](docs/how-to/5-upload-file-via-github-web.md)   | Create directories, upload, or replace asset files directly from the GitHub website |
+| [Update Importality Submodule](docs/how-to/x-update-importality-submodule.md) | Pull upstream updates for the Importality addon                                     |
 
 ### Design Docs
 
 The full listing is located here [/docs/design-docs/](./docs/design-docs/)
 
-| Document | Description |
-|----------|-------------|
-| [1. Input & movement](docs/design-docs/1-input-and-movement-component-design-doc.md) | Godot input and movement component design |
-| [2. Health component](docs/design-docs/2-health-component-design-doc.md) | Godot health component composition design |
-| [3. Attack components](docs/design-docs/3-attack-components-design-doc.md) | Bar game attack system design |
-| [4. Chase & navigation](docs/design-docs/4-chase-and-navigation-design-doc.md) | Enemy AI chase and navigation design |
-| [5. Scene flow manager](docs/design-docs/5-scene-flow-manager-design-doc.md) | Enforced scene/level flow via the `FLOW_MANAGER` autoload, with an auto-generated flow graph |
-| [6. State machine & factory](docs/design-docs/6-state-machine-and-factory-design-doc.md) | State machine and factory architecture for managing game object states and centralized object creation |
-| [x. NPC spawner & spawn point](docs/design-docs/x-npc-spawner-spawn-point-design-doc.md) | Data-driven enemy spawner system design |
-| [7. HUD & game settings](docs/design-docs/7-hud-and-game-settings-design-doc.md) | Persistent settings and in-game HUD overlay design |
-| [x. Drink crafting & serving](docs/design-docs/drink-crafting/x-drink-crafting-and-serving-design-doc.md) | Drink crafting and serving system design |
-| [x. First level template](docs/design-docs/x-first-level-design-template.md) | Level 1 design template and mockup |
+| Document                                                                                                  | Description                                                                                            |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| [1. Input & movement](docs/design-docs/1-input-and-movement-component-design-doc.md)                      | Godot input and movement component design                                                              |
+| [2. Health component](docs/design-docs/2-health-component-design-doc.md)                                  | Godot health component composition design                                                              |
+| [3. Attack components](docs/design-docs/3-attack-components-design-doc.md)                                | Bar game attack system design                                                                          |
+| [4. Chase & navigation](docs/design-docs/4-chase-and-navigation-design-doc.md)                            | Enemy AI chase and navigation design                                                                   |
+| [5. Scene flow manager](docs/design-docs/5-scene-flow-manager-design-doc.md)                              | Enforced scene/level flow via the `FLOW_MANAGER` autoload, with an auto-generated flow graph           |
+| [6. State machine & factory](docs/design-docs/6-state-machine-and-factory-design-doc.md)                  | State machine and factory architecture for managing game object states and centralized object creation |
+| [x. NPC spawner & spawn point](docs/design-docs/x-npc-spawner-spawn-point-design-doc.md)                  | Data-driven enemy spawner system design                                                                |
+| [7. HUD & game settings](docs/design-docs/7-hud-and-game-settings-design-doc.md)                          | Persistent settings and in-game HUD overlay design                                                     |
+| [x. Drink crafting & serving](docs/design-docs/drink-crafting/x-drink-crafting-and-serving-design-doc.md) | Drink crafting and serving system design                                                               |
+| [x. First level template](docs/design-docs/x-first-level-design-template.md)                              | Level 1 design template and mockup                                                                     |
 
 ### Generated Docs
 
 The full listing is located here [/docs/generated-docs/](./docs/generated-docs/)
 
-| Document | Description |
-|----------|-------------|
+| Document                                              | Description                                                                                                                                                            |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Scene Flow Graph](docs/generated-docs/flow-graph.md) | Auto-generated level roadmap (mermaid + state→scene map). Source of truth: `_ALLOWED` in `flowManager.gd`. Regenerate via `./scripts/dev-tools/generate-flow-graph.sh` |
 
 ### Codebase Patterns

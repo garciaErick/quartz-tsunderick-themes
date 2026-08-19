@@ -1,0 +1,42 @@
+/*
+ * Typora "Smoky Quartz" palette port (dark mode).
+ * Source: https://github.com/troennes/quartz-theme-typora (theme/quartz-smoky.css)
+ *   --background-color: #101010    -> --light
+ *   --border-color: #232629        -> --lightgray
+ *   --accent-color: #4f525a        -> --gray
+ *   --font-color: #808e95          -> --darkgray
+ *   --light-header-color: #dbdbdb  -> --dark
+ *   --link-color: #5584aa          -> --secondary
+ *   (derived) 35% tint of link     -> --tertiary
+ *   --select-text-bg-color: #186a9a (alpha) -> --highlight
+ *   mark #b8b80a (alpha)           -> --textHighlight
+ *
+ * Same palette-only/static-value strategy as typora-milky.css. Scoped to
+ * [saved-theme="dark"] which the runtime switcher forces for this theme.
+ */
+
+:root:root[saved-theme="dark"] {
+  --light: #101010;
+  --lightgray: #232629;
+  --gray: #4f525a;
+  --darkgray: #808e95;
+  --dark: #dbdbdb;
+  --secondary: #5584aa;
+  --tertiary: #90afc8;
+  --highlight: rgba(24, 106, 154, 0.35);
+  --textHighlight: #b8b80a99;
+
+  /* accent HSL computed from --secondary #5584aa (hsl(207, 33%, 50%)) */
+  --accent-h: 207;
+  --accent-s: 33%;
+  --accent-l: 50%;
+}
+
+/* Dark-only palette: hide the light/dark toggle while active (same
+   approach @quartz-themes/core uses for build-time single-mode themes). */
+button.darkmode {
+  display: none !important;
+}
+:root {
+  color-scheme: dark;
+}

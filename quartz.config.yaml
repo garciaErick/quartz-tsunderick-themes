@@ -114,6 +114,65 @@ plugins:
     options:
       theme: default
       mode: both
+  - source: "./plugins/theme-switcher"
+    enabled: true
+    order: 60
+    options:
+      themes:
+        - id: default
+          label: Default
+        - id: typora-milky
+          label: Typora Milky
+        - id: typora-smoky
+          label: Typora Smoky
+        - id: 80s-neon
+          label: 80s Neon
+        - id: aaaa
+          label: Aaaa
+        - id: amber-cathode
+          label: Amber Cathode
+        - id: aurora
+          label: Aurora
+        - id: base2tone
+          label: Base2tone
+        - id: darkrune
+          label: Darkrune
+        - id: emerald-synth
+          label: Emerald Synth
+        - id: evangelion
+          label: Evangelion
+        - id: focus
+          label: Focus
+        - id: hanabi
+          label: Hanabi
+        - id: hoverpopup
+          label: Hoverpopup
+        - id: kanagawa-hokusai
+          label: Kanagawa Hokusai
+        - id: kanagawa-palette
+          label: Kanagawa Palette
+        - id: lattelogic
+          label: Lattelogic
+        - id: lyt-mode
+          label: Lyt Mode
+        - id: material-gruvbox
+          label: Material Gruvbox
+        - id: mono-high-contrast
+          label: Mono High Contrast
+        - id: monochroyou
+          label: Monochroyou
+        - id: monokai
+          label: Monokai
+        - id: neon-synthwave
+          label: Neon Synthwave
+        - id: opal
+          label: Opal
+        - id: palenight
+          label: Palenight
+    layout:
+      position: left
+      priority: 32
+      group: toolbar
   - source: "@quartz-community/remove-draft"
     enabled: true
   - source: "@quartz-community/explicit-publish"

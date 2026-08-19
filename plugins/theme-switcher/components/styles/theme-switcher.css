@@ -1,0 +1,121 @@
+/* Theme switcher toolbar button + popover menu.
+   Colors come from the active theme's CSS variables so the popover
+   automatically restyles under every theme, including single-mode ones. */
+
+.theme-switcher {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.theme-switcher-toggle {
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  border: none;
+  width: 20px;
+  height: 32px;
+  margin: 0;
+  position: relative;
+  text-align: inherit;
+  flex-shrink: 0;
+  color: var(--darkgray);
+}
+
+.theme-switcher-toggle svg {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: calc(50% - 10px);
+  left: 0;
+}
+
+.theme-switcher-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 100;
+  min-width: 220px;
+  max-width: 300px;
+  max-height: min(60vh, 480px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 6px;
+  background: var(--light);
+  border: 1px solid var(--lightgray);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+/* On narrow/mobile viewports the toolbar lives in a centered top row;
+   anchor the menu to the container's right edge so it grows leftward
+   instead of overflowing the viewport. Matches variables.scss $mobile. */
+@media (max-width: 800px) {
+  .theme-switcher-menu {
+    left: auto;
+    right: 0;
+  }
+}
+
+.theme-switcher-menu[hidden] {
+  display: none;
+}
+
+.theme-switcher-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--darkgray);
+  font-family: inherit;
+  font-size: 0.95em;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+.theme-switcher-option:hover,
+.theme-switcher-option:focus-visible {
+  background: var(--highlight);
+  color: var(--dark);
+  outline: none;
+}
+
+.theme-switcher-option[aria-checked="true"] {
+  color: var(--secondary);
+  font-weight: 600;
+}
+
+.theme-switcher-check {
+  flex-shrink: 0;
+  width: 1em;
+  opacity: 0;
+}
+
+.theme-switcher-option[aria-checked="true"] .theme-switcher-check {
+  opacity: 1;
+}
+
+.theme-switcher-name {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-switcher-badge {
+  flex-shrink: 0;
+  font-size: 0.68em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--lightgray);
+  color: var(--gray);
+}

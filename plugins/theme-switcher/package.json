@@ -1,0 +1,46 @@
+{
+  "name": "theme-switcher",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Runtime theme dropdown for Quartz v5: emits one CSS file per @quartz-themes package plus custom palette themes, and adds a toolbar picker that swaps them at runtime.",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./components": {
+      "import": "./dist/components/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "quartz": {
+    "name": "theme-switcher",
+    "displayName": "Theme Switcher",
+    "description": "Runtime theme dropdown: emits per-theme CSS files and adds a toolbar theme picker.",
+    "version": "1.0.0",
+    "author": "Ashfall Software",
+    "license": "MIT",
+    "category": [
+      "emitter",
+      "component"
+    ],
+    "quartzVersion": ">=5.0.0",
+    "defaultOrder": 60,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "ThemeSwitcher": {
+        "name": "ThemeSwitcher",
+        "displayName": "Theme Switcher",
+        "description": "Toolbar dropdown for switching site themes at runtime",
+        "version": "1.0.0",
+        "defaultPosition": "left",
+        "defaultPriority": 32
+      }
+    }
+  }
+}
