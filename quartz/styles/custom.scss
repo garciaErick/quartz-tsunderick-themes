@@ -2,19 +2,29 @@
 
 // put your custom CSS here!
 
-// Mermaid compat: @quartz-themes/default defines --tertiary via
-// `hsl(calc(var(--accent-h) - 3), calc(var(--accent-s) * 1.02), calc(var(--accent-l) * 1.15))`.
-// Unregistered custom properties keep calc() unresolved in getComputedStyle(),
-// and mermaid's color parser throws "Unsupported color format" on calc(),
-// silently killing all diagram rendering. Pin --tertiary to the equivalent
-// static value (h: 258-3=255, s: 88%*1.02=89.76%, l: 66%*1.15=75.9%).
-// Triple :root outspecifies the theme's `:root:root` / `:root:root[saved-theme="dark"]`
-// so this wins the cascade despite loading earlier. The :not([data-theme-selected])
-// guard keeps this pin scoped to the default theme — runtime-selected themes
-// (plugins/theme-switcher) provide their own static --tertiary and must not be
-// overridden. Remove if upstream fixes theme color handling
-// (quartz-community/obsidian-flavored-markdown).
-:root:root:root:not([data-theme-selected]),
-:root:root:root:not([data-theme-selected])[saved-theme="dark"] {
+// Mermaid compat pin for the baked theme (@quartz-themes/lattelogic).
+// lattelogic defines its accents via hsl(calc(...)) chains:
+//   --tertiary  -> --color-accent-2 -> hsl(calc(...))
+//   dark --secondary -> --color-accent-1 -> hsl(calc(...))
+// Unregistered custom properties keep calc() unresolved in
+// getComputedStyle(), and mermaid's color parser throws
+// "Unsupported color format" on calc(), silently killing all diagrams.
+// Pinned to the theme's own resolved values (accent = hsl(258, 88%, 66%)):
+//   light --tertiary   = accent-2: h-3, s*1.02, l*1.15 -> hsl(255, 89.76%, 75.9%)
+//   dark  --secondary  = accent-1: h-3, s*1.02, l*1.15 -> hsl(255, 89.76%, 75.9%)
+//   dark  --tertiary   = accent-2: h-5, s*1.05, l*1.29 -> hsl(253, 92.4%, 85.14%)
+// (light --secondary resolves through --color-accent to a calc-free
+//  hsl(258, 88%, 66%) and needs no pin.)
+// Triple :root outspecifies the theme's `:root:root` rules; the
+// :not([data-theme-selected]) guard keeps runtime-selected themes
+// (plugins/theme-switcher) untouched — all of them are verified calc-free.
+// If you swap the baked theme again, recompute these values (or drop the
+// pin if the new theme is calc-free).
+:root:root:root:not([data-theme-selected]) {
   --tertiary: hsl(255, 89.76%, 75.9%);
+}
+
+:root:root:root:not([data-theme-selected])[saved-theme="dark"] {
+  --secondary: hsl(255, 89.76%, 75.9%);
+  --tertiary: hsl(253, 92.4%, 85.14%);
 }

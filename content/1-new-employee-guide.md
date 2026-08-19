@@ -1,41 +1,34 @@
 # New employee guide
 
-## TOC
+TODO: fill this section
 
-<!-- mtoc-start -->
+## 1. Preflight steps
 
-* [Setup your environment](#setup-your-environment)
-  * [Devs](#devs)
-  * [1. Install Godot 4.6.2](#1-install-godot-462)
-  * [2. Clone the Repository](#2-clone-the-repository)
-  * [3. Workspace Setup (Optional)](#3-workspace-setup-optional)
-  * [4. Install Aseprite & Configure Importality](#4-install-aseprite--configure-importality)
-  * [5. Pre-commit Hooks](#5-pre-commit-hooks)
-* [Folder Structure](#folder-structure)
-* [Contributing Workflow](#contributing-workflow)
-  * [Step 1: Day-to-Day — Keep Your Branch Synced with main](#step-1-day-to-day--keep-your-branch-synced-with-main)
-  * [Step 2: When Your Work Is Ready — Create a Pull Request](#step-2-when-your-work-is-ready--create-a-pull-request)
-  * [Step 3: After Your PR Is Merged — Reset Your Branch](#step-3-after-your-pr-is-merged--reset-your-branch)
-* [Documentation](#documentation)
-  * [How-To Guides](#how-to-guides)
-  * [Design Docs](#design-docs)
-  * [Generated Docs](#generated-docs)
-  * [Codebase Patterns](#codebase-patterns)
-* [Tools and Technologies](#tools-and-technologies)
-  * [Game Engine](#game-engine)
-  * [Graphics and Design](#graphics-and-design)
-  * [Version Control](#version-control)
-* [Contributors](#contributors)
+Es necesario seguir estos pasos antes de poder tener acceso y contribuir al proyecto.
+Somos tan fuertes como nuestro eslabon mas debil, asi que es necesaria la
+seguridad. No quiero que me hackeen la org por que alguien la cago xD.
 
-<!-- mtoc-end -->
+TODO: AI to tidy this up below
 
-## Setup your environment
+- [ ] 1. Set up an authenticator app. Recomendation [googleauth](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=en_US&pli=1)
+
+- [ ] 2. Set up a password manager. Recomendation: [bitwarden](https://play.google.com/store/apps/details?id=com.x8bit.bitwarden)
+
+- [ ] 3. Set up browser integration for your password manager. Recomendation:
+      [bitwarden chrome extension](https://chromewebstore.google.com/detail/bitwarden-password-manage/nngceckbapebfimnlniiiahkandclblb?browser=brave)
+
+## 2. Setup your environment
+
+TODO: explain there will be small differences in how devs and designers
+might contribute, but stress the importance of working in your branch
 
 ### Devs
 
 ### 1. Install Godot 4.6.2
 
-Download and install **Godot 4.6.2 stable** from [godotengine.org](https://godotengine.org/download). The project uses Godot 4.6.2 features and will not work with older versions.
+Download and install **Godot 4.6.2 stable** from
+[godotengine.org](https://godotengine.org/download). The project uses Godot 4.6.2
+features and will not work with older versions.
 
 ### 2. Clone the Repository
 
