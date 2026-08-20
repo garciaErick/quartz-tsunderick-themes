@@ -17,7 +17,9 @@ cosas nuevas
 
 ## Start here
 
-- New here? Read [[contributing|how to write and publish pages]]
+- New here? Read [[contributing-to-the-docs.md|how to write and publish pages]]
   it takes about two minutes to learn.
-- Looking for something specific? Use the search bar (top-left) or explore the file tree in the sidebar.
-- The graph view (right sidebar) shows how pages link together as the collection grows.
+- Looking for something specific? Use the search bar (top-left) or explore the
+  file tree in the sidebar.
+- The graph view (right sidebar) shows how pages link together as the collection
+  grows.
