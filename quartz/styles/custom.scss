@@ -28,3 +28,77 @@
   --secondary: hsl(255, 89.76%, 75.9%);
   --tertiary: hsl(253, 92.4%, 85.14%);
 }
+
+// Table of contents: always show in full — never an inner scrollbar.
+//
+// Three things conspire to give the TOC a scrollbar when the right sidebar
+// runs out of vertical space:
+//   1. base.scss `ul.overflow { overflow-y: auto }` on the TOC list
+//   2. the TOC plugin's `ul.toc-content.overflow { max-height: calc(100% - 2rem) }`
+//   3. the TOC container's `flex: 0 0.5 auto` (shrinkable) plus base.scss's
+//      `div:has(> .overflow) { max-height: 100%; overflow-y: hidden }`
+// Overriding all three lets the list render at its natural height; any
+// space pressure then falls on backlinks/graph below instead. Selectors
+// are kept specific enough to win regardless of stylesheet order.
+.sidebar .toc {
+  flex: 0 0 auto; // never shrink below content height
+  max-height: none;
+}
+
+.sidebar .toc ul.toc-content.overflow {
+  max-height: none;
+  overflow-y: visible;
+}
+
+// Table of contents: true heading levels + H-level prefixes.
+//
+// plugins/toc-true-depth overwrites toc entry depths with real heading
+// levels (post-h1-title: sections are h2, subsections h3). Prefix each
+// entry with its level and key indentation to the true level instead of
+// upstream's depth * 1rem (which would indent h2 sections by 2rem).
+.sidebar .toc ul.toc-content.overflow {
+  .depth-0,
+  .depth-1,
+  .depth-2 {
+    padding-left: 0;
+  }
+  .depth-3 {
+    padding-left: 1rem;
+  }
+  .depth-4 {
+    padding-left: 2rem;
+  }
+  .depth-5 {
+    padding-left: 3rem;
+  }
+  .depth-6 {
+    padding-left: 4rem;
+  }
+
+  li[class*="depth-"] > a::before {
+    font-family: var(--codeFont, monospace);
+    font-size: 0.72em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-right: 0.35em;
+    opacity: 0.75; // relative to the anchor's own 0.35/0.75 tracking
+  }
+  li.depth-1 > a::before {
+    content: "H1 ";
+  }
+  li.depth-2 > a::before {
+    content: "H2 ";
+  }
+  li.depth-3 > a::before {
+    content: "H3 ";
+  }
+  li.depth-4 > a::before {
+    content: "H4 ";
+  }
+  li.depth-5 > a::before {
+    content: "H5 ";
+  }
+  li.depth-6 > a::before {
+    content: "H6 ";
+  }
+}

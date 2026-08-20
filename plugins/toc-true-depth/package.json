@@ -1,0 +1,32 @@
+{
+  "name": "toc-true-depth",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Table of contents entries carry true heading levels (H2/H3) instead of @quartz-community/table-of-contents' level-relative depths, so depth classes and H-prefix styling reflect the real document structure.",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "quartz": {
+    "name": "toc-true-depth",
+    "displayName": "TOC True Depth",
+    "description": "TOC entries keep true heading levels instead of level-relative depths",
+    "version": "1.0.0",
+    "author": "Ashfall Software",
+    "license": "MIT",
+    "category": [
+      "transformer"
+    ],
+    "quartzVersion": ">=5.0.0",
+    "defaultOrder": 51,
+    "defaultEnabled": true,
+    "defaultOptions": {}
+  }
+}

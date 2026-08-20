@@ -81,7 +81,10 @@ plugins:
     order: 50
     layout:
       position: right
-      priority: 30
+      priority: 10
+  - source: "./plugins/toc-true-depth"
+    enabled: true
+    order: 51
   - source: "@quartz-community/crawl-links"
     enabled: true
     options:
@@ -216,7 +219,7 @@ plugins:
     enabled: true
     layout:
       position: right
-      priority: 10
+      priority: 30
   - source: "@quartz-community/search"
     enabled: true
     layout:
@@ -229,7 +232,7 @@ plugins:
     enabled: true
     layout:
       position: right
-      priority: 50
+      priority: 20
   - source: "@quartz-community/article-title"
     enabled: false
     layout:
