@@ -1,0 +1,45 @@
+{
+  "name": "graph-labels",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Graph view with always-visible node labels — wraps @quartz-community/graph and patches its inline render script (labels ship alpha=0 and only appear on hover or extreme zoom).",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./components": {
+      "import": "./dist/components/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "quartz": {
+    "name": "graph-labels",
+    "displayName": "Graph View (Visible Labels)",
+    "description": "Interactive graph with node names always shown",
+    "version": "1.0.0",
+    "author": "Ashfall Software",
+    "license": "MIT",
+    "category": [
+      "component"
+    ],
+    "quartzVersion": ">=5.0.0",
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "Graph": {
+        "name": "Graph",
+        "displayName": "Graph View",
+        "description": "Network graph with always-visible node labels",
+        "version": "1.0.0",
+        "defaultPosition": "right",
+        "defaultPriority": 10
+      }
+    }
+  }
+}

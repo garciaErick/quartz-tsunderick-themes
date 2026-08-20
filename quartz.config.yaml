@@ -208,6 +208,11 @@ plugins:
       position: left
       priority: 50
   - source: "@quartz-community/graph"
+    enabled: false
+    layout:
+      position: right
+      priority: 10
+  - source: "./plugins/graph-labels"
     enabled: true
     layout:
       position: right

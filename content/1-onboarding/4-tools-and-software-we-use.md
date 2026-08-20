@@ -15,6 +15,10 @@
   modelling tool. **We have a license** in our itch.io account _ashfallSoftware_
   if you are already logged in find it in [itch.io purchases](https://itch.io/my-purchases)
   ![[picocad2-3d-model.gif]]
+- [Obsidian](https://obsidian.md/) - Obsidian is a markdown editor and since all
+  of our webpages content is just plain markdown, with this you can write
+  documents and edit all of our webpages
+  ![[obsidian-webpage-side-by-side.png]]
 
 ### Version Control
 
