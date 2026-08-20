@@ -1,0 +1,36 @@
+{
+  "name": "folder-alpha",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Folder index pages with alphabetical (by filename) ordering: subfolders first, then files A→Z. Wraps @quartz-community/folder-page — same options, same rendering, only the sort changes.",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "quartz": {
+    "name": "folder-alpha",
+    "displayName": "Folder Page (Alphabetical)",
+    "description": "Folder index pages ordered alphabetically by filename",
+    "version": "1.0.0",
+    "author": "Ashfall Software",
+    "license": "MIT",
+    "category": [
+      "pageType",
+      "component"
+    ],
+    "quartzVersion": ">=5.0.0",
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {
+      "showFolderCount": true,
+      "showSubfolders": true
+    }
+  }
+}

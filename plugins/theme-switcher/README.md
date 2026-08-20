@@ -9,26 +9,32 @@ palette ports, with the choice persisted in `localStorage`.
 
 ```
 build time   ./plugins/theme-switcher (emitter)
-             └── QuartzTheme({ theme }).externalResources()   ← public API of
-                 @quartz-themes/core                                   │
-                 writes one lazy CSS file per theme:                   │
-                 public/static/theme-<id>.css                          │
-                                                                      │
-runtime      ThemeSwitcher component (toolbar, left/32/toolbar group) ─┘
-             └── swaps <link id="quartz-theme-link" data-persist>
-                 persists "quartz-theme" in localStorage
-                 forces light/dark for single-mode themes
-                 (saved-theme + themechange event, darkmode toggle hidden
-                 via the theme file's own `button.darkmode { display:none }`)
+             ├── bakedTheme option: harvests the default theme, guard-scopes
+             │   EVERY rule under html:not([data-theme-selected]), emits
+             │   static/theme-default.css, injects it per-page via
+             │   <link data-baked-theme> (replaces @quartz-themes/core)
+             ├── per-theme harvest → public/static/theme-<id>.css
+             │   (each auto-verified calc-free in the mermaid color vars;
+             │    unresolvable values fail the build loudly)
+             └── theme manifest data → ThemeSwitcher component (SSR menu)
+
+runtime      selecting a theme sets html[data-theme-selected] (early script,
+             pre-paint) which fully neutralizes the guarded baked css, and
+             disables its <link>; the chosen theme css loads alone on top of
+             the neutral quartz-base — pixel-identical to the official
+             quartz-themes preview sites.
 ```
 
-- The default site theme stays baked in at build time; a selected theme is
-  fetched only on demand, so visitors who never open the dropdown pay nothing.
-- Single-mode (dark-only / light-only) themes are marked with a badge in the
-  menu and force the site into their supported mode.
-- `data-theme-selected` is set on `<html>` while a non-default theme is
-  active; `quartz/styles/custom.scss` scopes its mermaid `--tertiary` pin to
-  `:not([data-theme-selected])` so selected themes are not overridden.
+- The baked default downloads on every cold load (~300KB) even when another
+  theme is stored — static HTML can't know the visitor's choice server-side.
+  Selected themes are fetched only on demand.
+- `?theme=<id>` on any URL previews a theme without persisting it.
+- Single-mode (dark-only / light-only) themes are marked with a badge and
+  force the site into their supported mode (their css hides the darkmode
+  toggle via `button.darkmode{display:none}`).
+- `globalThis.__quartzFonts` handoff for @quartz-community/quartz-fonts is
+  performed by this plugin (read lazily by quartz-fonts at
+  externalResources time).
 
 ## URL preview parameter
 

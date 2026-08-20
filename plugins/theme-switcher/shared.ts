@@ -29,3 +29,9 @@ export function setThemeRegistry(themes: SwitchableTheme[]): void {
 export function getThemeRegistry(): SwitchableTheme[] {
   return ((globalThis as Record<string, unknown>)[REGISTRY_KEY] as SwitchableTheme[]) ?? []
 }
+
+/** Matches @quartz-community/utils pathToRoot ("index" -> ".", "a/b" -> ".."). */
+export function pathToRoot(slug: string): string {
+  const ups = slug.split("/").length - 1
+  return ups === 0 ? "." : "../".repeat(ups)
+}

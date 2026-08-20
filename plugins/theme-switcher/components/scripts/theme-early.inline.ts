@@ -36,7 +36,12 @@ const id = previewId ?? localStorage.getItem(STORAGE_KEY)
 if (id && id !== "default" && id in catalog) {
   document.documentElement.setAttribute("data-theme-selected", id)
 
-  const baseHref = document.querySelector('link[rel="stylesheet"]')?.getAttribute("href")
+  // Resolve against the first RELATIVE stylesheet link (the page's own
+  // index css). The first <link> overall can be an absolute Google Fonts
+  // URL — resolving against it would 404 the theme file.
+  const baseHref = document
+    .querySelector('link[rel="stylesheet"]:not([href^="http"]):not([href^="//"])')
+    ?.getAttribute("href")
   if (baseHref) {
     const href = new URL(
       `static/theme-${encodeURIComponent(id)}.css`,

@@ -25,8 +25,22 @@ function emitThemeChangeEvent(theme: ForcedMode): void {
   document.dispatchEvent(new CustomEvent("themechange", { detail: { theme } }))
 }
 
+/**
+ * Disable/enable the baked default theme link. The guard selectors already
+ * neutralize it via html:not([data-theme-selected]); disabling additionally
+ * skips style computation entirely (and survives any selector edge case).
+ */
+function setBakedDisabled(disabled: boolean): void {
+  const baked = document.querySelector("link[data-baked-theme]")
+  if (!baked) return
+  if (disabled) baked.setAttribute("disabled", "")
+  else baked.removeAttribute("disabled")
+  if (baked instanceof HTMLLinkElement) baked.disabled = disabled
+}
+
 function applyTheme(id: string): void {
   localStorage.setItem(STORAGE_KEY, id)
+  setBakedDisabled(id !== "default")
 
   const docEl = document.documentElement
   const existing = document.getElementById(LINK_ID)
@@ -178,6 +192,9 @@ function wire(): void {
   wired = true
   document.addEventListener("click", onDocClick, true)
   document.addEventListener("keydown", onDocKeydown, true)
+  // cold load with a stored selection: the early script already set the
+  // attribute (guards neutralize the baked css); disable the link for real
+  setBakedDisabled(document.documentElement.hasAttribute("data-theme-selected"))
   const count = document.querySelectorAll(".theme-switcher-option").length
   console.log(`[theme-switcher] ready (${count} themes)`)
 }

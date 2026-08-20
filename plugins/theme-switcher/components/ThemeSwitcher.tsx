@@ -3,19 +3,13 @@ import type {
   QuartzComponentConstructor,
   QuartzComponentProps,
 } from "@quartz-community/types"
-import { getThemeRegistry } from "../shared"
+import { getThemeRegistry, pathToRoot } from "../shared"
 // @ts-expect-error imported as text via build.mjs inline-text loader
 import earlyScript from "./scripts/theme-early.inline.ts"
 // @ts-expect-error imported as text via build.mjs inline-text loader
 import behaviorScript from "./scripts/theme-switcher.inline.ts"
 // @ts-expect-error imported as text via build.mjs inline-text loader
 import styles from "./styles/theme-switcher.css"
-
-/** Matches @quartz-community/utils pathToRoot ("index" -> ".", "a/b" -> ".."). */
-function pathToRoot(slug: string): string {
-  const ups = slug.split("/").length - 1
-  return ups === 0 ? "." : "../".repeat(ups)
-}
 
 /**
  * Built as a factory so the theme catalog (id -> modes) from the shared

@@ -1,0 +1,46 @@
+{
+  "name": "h1-title",
+  "version": "1.1.0",
+  "type": "module",
+  "private": true,
+  "description": "The article page shows the first root-level # heading as its single top-level title, while folder listings/breadcrumbs/search keep the filename title.",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./components": {
+      "import": "./dist/components/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "quartz": {
+    "name": "h1-title",
+    "displayName": "H1 Title",
+    "description": "Use each page's first # heading as the article title",
+    "version": "1.1.0",
+    "author": "Ashfall Software",
+    "license": "MIT",
+    "category": [
+      "transformer",
+      "component"
+    ],
+    "quartzVersion": ">=5.0.0",
+    "defaultOrder": 6,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "ArticleTitle": {
+        "name": "ArticleTitle",
+        "displayName": "Article Title",
+        "description": "Renders h1Title (first # heading) falling back to frontmatter.title",
+        "version": "1.1.0",
+        "defaultPosition": "beforeBody",
+        "defaultPriority": 10
+      }
+    }
+  }
+}

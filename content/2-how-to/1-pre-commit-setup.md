@@ -456,15 +456,3 @@ source .venv/bin/activate
 uv pip install -r requirements-dev.txt
 pre-commit install
 ```
-
-## Optional: Godot Editor Extensions
-
-```gdscript
-# TODO:
-```
-
-> [!NOTE]
-> This section is a placeholder. Fill in setup instructions as needed.
-
-* [ ] Set up GDScript formatter/linter integration in the Godot editor
-* [ ] Configure external editor (e.g., VS Code, Neovim) with GDScript LSP
