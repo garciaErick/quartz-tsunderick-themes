@@ -37,9 +37,10 @@
 //   2. the TOC plugin's `ul.toc-content.overflow { max-height: calc(100% - 2rem) }`
 //   3. the TOC container's `flex: 0 0.5 auto` (shrinkable) plus base.scss's
 //      `div:has(> .overflow) { max-height: 100%; overflow-y: hidden }`
-// Overriding all three lets the list render at its natural height; any
-// space pressure then falls on backlinks/graph below instead. Selectors
-// are kept specific enough to win regardless of stylesheet order.
+// Overriding all three lets the list render at its natural height. Space
+// pressure is then handled by the sidebar scroll below, not by squashing
+// any section. Selectors are kept specific enough to win regardless of
+// stylesheet order.
 .sidebar .toc {
   flex: 0 0 auto; // never shrink below content height
   max-height: none;
@@ -48,6 +49,38 @@
 .sidebar .toc ul.toc-content.overflow {
   max-height: none;
   overflow-y: visible;
+}
+
+// Right sidebar: no section ever squished.
+//
+// With the TOC unsquishable (above) and the graph a fixed 250px box,
+// backlinks was the sidebar's ONLY shrinkable flex child — so it absorbed
+// all vertical pressure and crushed to a sliver between the two. Give
+// backlinks the same immunity and let the SIDEBAR itself scroll when the
+// three sections' natural heights exceed the viewport: everything stays
+// fully visible/expandable, one scrollbar at the sidebar level.
+// Desktop only — below 1200px the sidebar isn't a sticky column (it's a
+// row of cards), so its stock layout is left untouched.
+@media all and #{$desktop} {
+  .sidebar.right {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .sidebar .backlinks {
+    flex: 0 0 auto; // never shrink below content height
+    max-height: none; // counter base.scss's div:has(> .overflow) clip
+    overflow-y: visible;
+  }
+
+  .sidebar .backlinks ul.overflow {
+    max-height: none; // counter component + base.scss caps
+    overflow-y: visible;
+  }
+
+  .sidebar .graph {
+    flex: 0 0 auto; // its 250px box is rigid anyway — make it explicit
+  }
 }
 
 // Table of contents: true heading levels + H-level prefixes.
