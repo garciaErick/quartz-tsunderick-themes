@@ -83,6 +83,39 @@
   }
 }
 
+// Below desktop (<1200px): show the TOC and keep all sidebar cards usable.
+//
+// Upstream base.scss hides the TOC entirely on narrow viewports
+// (.page > #quartz-body .sidebar.right > .toc { display: none }) and turns
+// the right sidebar into a row of cards placed after the article. Un-hide
+// the TOC so it renders as a card there too (DOM order already puts it
+// first: toc -> backlinks -> graph), let the cards wrap instead of
+// crushing on narrow screens, and give the TOC list its scroll back inside
+// the card — a tall fully-expanded TOC would push backlinks/graph below
+// the fold on tablet/mobile, so the stock 24rem card behavior applies.
+// (The no-scrollbar guarantee is the desktop sidebar above.)
+@media all and not #{$desktop} {
+  .sidebar.right > .toc {
+    display: flex; // un-hide (upstream's hide is layered; this is not)
+  }
+
+  .sidebar.right {
+    flex-wrap: wrap;
+    & > * {
+      flex: 1 1 240px; // wrap to a new row instead of crushing three cards
+    }
+  }
+
+  .sidebar .toc {
+    max-height: 24rem; // match the other cards' stock cap
+  }
+
+  .sidebar .toc ul.toc-content.overflow {
+    max-height: 100%;
+    overflow-y: auto; // scroll inside the card only on narrow viewports
+  }
+}
+
 // Table of contents: true heading levels + H-level prefixes.
 //
 // plugins/toc-true-depth overwrites toc entry depths with real heading
