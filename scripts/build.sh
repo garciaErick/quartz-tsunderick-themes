@@ -136,3 +136,19 @@ if [ -f .site-subpath ]; then
     shopt -u dotglob nullglob
   fi
 fi
+
+# --- 7) static assets: Quartz's Static emitter globs quartz/static with
+#        gitignore-awareness, and child sites gitignore quartz/ (engine-
+#        extracted), which hides those files from it. Copy the merged
+#        (engine stock + child overlay) files into the output directly.
+OUT_STATIC="public/static"
+if [ -n "${SUBPATH:-}" ]; then
+  OUT_STATIC="public/$SUBPATH/static"
+  # mirror the 404 to the output root so Cloudflare's
+  # not_found_handling: "404-page" finds it for subpath routes
+  if [ -f "public/$SUBPATH/404.html" ]; then
+    cp "public/$SUBPATH/404.html" public/404.html
+  fi
+fi
+mkdir -p "$OUT_STATIC"
+cp -a quartz/static/. "$OUT_STATIC"/

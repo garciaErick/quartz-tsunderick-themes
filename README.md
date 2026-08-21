@@ -38,6 +38,7 @@ What it does:
 2. Overlays child pieces: `static/` → `quartz/static/`, `site-plugins/` → `plugins/`, appends `styles/custom.scss`.
 3. `npm ci` (cached by lockfile hash), `npx quartz plugin install`.
 4. `npx quartz build` → emits `./public` at the site root (this is what gets deployed).
+5. Copies `quartz/static/` assets into the output (Quartz's Static emitter uses a gitignore-aware glob, which can't see the engine-extracted `quartz/` in child sites) and, for subpath sites, mirrors the 404 page to the output root.
 
 Cloudflare Workers build command for child sites:
 
@@ -62,6 +63,21 @@ Notes:
 - Local `--serve` deliberately previews at `http://localhost:8080/` **without** the prefix (Quartz renders an empty basePath in serve mode).
 - Disable the `cname` emitter in a subpath site's config (a CNAME file only makes sense for a root domain).
 - `update-engine.sh` works unchanged from a subdirectory of a monorepo — the child site _is_ its directory.
+
+### Cloudflare Workers deployment (wrangler config)
+
+Workers created through the dashboard with an assets directory get their deploy config injected by Cloudflare. If your worker was created without one (or deploy fails with _"Could not detect a directory containing static files"_), commit a minimal `wrangler.jsonc` in the child root — see `templates/wrangler.jsonc`:
+
+```jsonc
+{
+  "name": "your-worker-name",
+  "compatibility_date": "2026-08-21",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page",
+  },
+}
+```
 
 ## Updating a site's engine (manual bump)
 
