@@ -17,7 +17,8 @@ my-site/
 ├── engine/                # git submodule → this repo, pinned SHA (required)
 ├── static/                # optional: icon.png, og-image.png → overlaid onto quartz/static/
 ├── styles/custom.scss     # optional: APPENDED after the engine's house styles
-└── site-plugins/<name>/   # optional: extra plugins, overlaid onto plugins/
+├── site-plugins/<name>/   # optional: extra plugins, overlaid onto plugins/
+└── .site-subpath          # optional: serve under a subpath, e.g. "docs" (see below)
 ```
 
 Everything else (Quartz core, plugins, themes, `package.json`, build tooling) comes from the engine at the pinned SHA — so compose logic can never drift from the engine version being composed.
@@ -43,6 +44,24 @@ Cloudflare Workers build command for child sites:
 ```
 git fetch --unshallow && git submodule update --init && bash engine/scripts/build.sh
 ```
+
+### Serving under a subpath (e.g. `domain.com/docs`)
+
+Add a `.site-subpath` file to the child root containing a single path segment (e.g. `docs`), and set the config's `baseUrl` to the full `domain.com/docs`. Quartz v5 derives the page basePath from the baseUrl's path, so links, the SPA router, and the 404 page all honor the prefix. After building, `build.sh` restructures the output so the deployable manifest literally contains `docs/index.html` etc.:
+
+```
+public/
+└── docs/
+    ├── index.html
+    └── ...
+```
+
+Notes:
+
+- The Cloudflare build command is unchanged — subpath sites are configured by the file, not the command.
+- Local `--serve` deliberately previews at `http://localhost:8080/` **without** the prefix (Quartz renders an empty basePath in serve mode).
+- Disable the `cname` emitter in a subpath site's config (a CNAME file only makes sense for a root domain).
+- `update-engine.sh` works unchanged from a subdirectory of a monorepo — the child site _is_ its directory.
 
 ## Updating a site's engine (manual bump)
 

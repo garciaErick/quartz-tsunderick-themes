@@ -78,6 +78,7 @@ tar -C "$ENGINE_ROOT" -cf - \
   --exclude='./.quartz/*' \
   --exclude='./.quartz-cache' \
   --exclude='./.quartz-cache/*' \
+  --exclude='./.site-subpath' \
   . | tar -C "$SITE_ROOT" -xf -
 
 # --- 3) child overlays
@@ -103,9 +104,35 @@ else
 fi
 npx quartz plugin install
 
-# --- 5) build
+# --- 5) build (+ optional subpath restructure)
 if [ "${1:-}" = "--serve" ]; then
+  # dev server serves at root (Quartz renders empty basePath under --serve),
+  # so the subpath restructure deliberately does NOT apply here
   exec npx quartz build --serve
-else
-  npx quartz build
+fi
+
+npx quartz build
+
+# --- 6) subpath output: public/* → public/<subpath>/*
+#      Opt in with a .site-subpath file (single segment, e.g. "docs") in the
+#      child root, for sites served under a subpath (baseUrl: domain.com/docs).
+#      The deployed worker then literally owns /docs* routes.
+if [ -f .site-subpath ]; then
+  SUBPATH="$(tr -d '[:space:]' < .site-subpath)"
+  if [ -n "$SUBPATH" ]; then
+    case "$SUBPATH" in
+      *[!a-zA-Z0-9-_]*)
+        echo "error: .site-subpath must be a single path segment (letters, digits, -, _), got '$SUBPATH'" >&2
+        exit 1
+        ;;
+    esac
+    echo "› restructuring public/ under subpath '/$SUBPATH'"
+    shopt -s dotglob nullglob
+    TMP="$(mktemp -d)"
+    mv public/* "$TMP"/
+    mkdir -p "public/$SUBPATH"
+    mv "$TMP"/* "public/$SUBPATH"/
+    rmdir "$TMP"
+    shopt -u dotglob nullglob
+  fi
 fi
