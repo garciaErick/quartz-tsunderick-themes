@@ -133,7 +133,11 @@ plugins:
     enabled: true
     order: 60
     options:
-      bakedTheme: default # theme applied before JS loads / without JS
+      # bakedTheme must be a REAL theme id from the list below (a theme that
+      # ships its own CSS). "default" is special: it's your site's base
+      # palette from the colors block above and has no CSS — using it here
+      # makes the plugin error out and get skipped silently.
+      bakedTheme: lattelogic
       themes: # trim this list to the themes you want in the menu
         - id: default
           label: Lattelogic
