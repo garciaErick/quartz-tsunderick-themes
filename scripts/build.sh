@@ -41,8 +41,8 @@ cd "$SITE_ROOT"
 rm -rf quartz plugins
 
 # --- 2) extract engine files; every child-owned path is excluded
-#        (./scripts stays excluded on purpose: scripts run from the submodule,
-#         they are never copied into the site)
+#        (./scripts and ./templates stay excluded on purpose: they run/are
+#         copied from the submodule directly, never extracted into the site)
 tar -C "$ENGINE_ROOT" -cf - \
   --exclude='./content' \
   --exclude='./content/*' \
@@ -68,6 +68,8 @@ tar -C "$ENGINE_ROOT" -cf - \
   --exclude='./site-plugins/*' \
   --exclude='./scripts' \
   --exclude='./scripts/*' \
+  --exclude='./templates' \
+  --exclude='./templates/*' \
   --exclude='./node_modules' \
   --exclude='./node_modules/*' \
   --exclude='./public' \

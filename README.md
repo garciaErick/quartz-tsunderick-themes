@@ -1,6 +1,6 @@
 # quartz-tsunderick-themes
 
-Shared **Quartz v5 engine + design system** for all Tsunderick/Ashfall sites. This repo holds the UI: the Quartz core, house styles, custom plugins (theme switcher with 17 themes, folder sorting, graph labels, H1 titles, true-depth TOC), the explorer configuration, and the child-site build tooling (`scripts/`).
+Shared **Quartz v5 engine + design system** for all Tsunderick/Ashfall sites. This repo holds the UI: the Quartz core, house styles, custom plugins (theme switcher with 17 themes, folder sorting, graph labels, H1 titles, true-depth TOC), the explorer configuration, the child-site build tooling (`scripts/`), and starter templates for new sites (`templates/`).
 
 Individual websites ("child sites") live in their own repos and contain **only content + configuration** — no build logic. They pull this engine in as a git submodule pinned to an exact commit.
 
@@ -33,7 +33,7 @@ bash engine/scripts/build.sh --serve     # hot-reload dev server (port 8080)
 
 What it does:
 
-1. Extracts engine files into the site root (skipping the engine's own `content/`, `quartz.config.yaml`, `README.md`, `docs/`, CI, and `scripts/` — the child's own files always win).
+1. Extracts engine files into the site root (skipping the engine's own `content/`, `quartz.config.yaml`, `README.md`, `docs/`, CI, `scripts/`, and `templates/` — the child's own files always win).
 2. Overlays child pieces: `static/` → `quartz/static/`, `site-plugins/` → `plugins/`, appends `styles/custom.scss`.
 3. `npm ci` (cached by lockfile hash), `npx quartz plugin install`.
 4. `npx quartz build` → emits `./public` at the site root (this is what gets deployed).
@@ -70,37 +70,20 @@ bash engine/scripts/build.sh --serve   # serves the site with your WIP engine
 ```bash
 git clone git@github.com:YOU/my-site.git && cd my-site
 git submodule add -b main https://github.com/garciaErick/quartz-tsunderick-themes.git engine
+cp engine/templates/gitignore .gitignore
+cp engine/templates/quartz.config.yaml quartz.config.yaml
 printf 'v22.16.0\n' > .node-version
 ```
 
-Add a `.gitignore` for everything the engine extracts (these are regenerated on every build, never tracked):
+Then make it yours:
 
-```gitignore
-.DS_Store
-node_modules
-public
-prof
-tsconfig.tsbuildinfo
-.obsidian
-.quartz-cache
-private/
-.quartz/
-.engine-deps-stamp
-quartz/
-plugins/
-quartz.ts
-quartz.config.default.yaml
-package.json
-package-lock.json
-tsconfig.json
-globals.d.ts
-index.d.ts
-.npmrc
-.prettierignore
-.prettierrc
-```
+- `content/` — write markdown, starting with `index.md`
+- `quartz.config.yaml` — edit the marked **identity block** (`pageTitle`, `baseUrl`, fonts, colors); trim the theme-switcher menu if you want fewer than 17 themes
+- `static/icon.png` + `static/og-image.png` — branding
 
-Then write your site — `content/` (start with `index.md`), `quartz.config.yaml` (copy from an existing site and change `pageTitle`, `baseUrl`, fonts/colors/themes), and `static/icon.png` + `static/og-image.png` for branding. Preview with `bash engine/scripts/build.sh --serve`, then connect the repo to a new Cloudflare Workers build with the build command above.
+Preview with `bash engine/scripts/build.sh --serve`, commit, and connect the repo to a new Cloudflare Workers build with the build command above.
+
+Starter files live in `templates/` (`quartz.config.yaml`, `gitignore`) and are versioned with the engine — so new sites always start from the current house defaults.
 
 ## Updating from upstream Quartz
 
