@@ -1,25 +1,48 @@
 ---
-title: Ashfall Software Docs
+title: Engine Theme Preview
 ---
 
-Bienvenidos a la documentacion oficial para Ashfall Software, somos un grupo
-bilingue asi que no se asusten si algunas cosas estan en español y otras estan
-en ingles.
+This is the **engine's own dev preview page** — a small sample of styled content so you can run `npx quartz build --serve` here and check themes, fonts, and plugins without a child site.
 
-Contribuir es super facil, simplemente tienen que ir al repositorio de los docs
-que esta [Ashfall-Software/docs.ashfallsoftware.com](https://github.com/Ashfall-Software/docs.ashfallsoftware.com),
-todo el contenido esta dentro del folder de `/content/` asi que si aprenden
-cosas nuevas
+Use the theme switcher in the toolbar to cycle the built-in themes.
 
-> [!info] Este sitio es privado y seguro
-> Docs are gated behind Cloudflare Access. If you can read this,
-> you're already in — sign in with your one-time PIN when prompted at `docs.ashfallsoftware.com`.
+## Typography
 
-## Start here
+The quick brown fox jumps over the lazy dog. `inline code`, _italics_, **bold**, ~~strikethrough~~, and a [link](https://quartz.jzhao.xyz).
 
-- New here? Read [[contributing-to-the-docs.md|how to write and publish pages]]
-  it takes about two minutes to learn.
-- Looking for something specific? Use the search bar (top-left) or explore the
-  file tree in the sidebar.
-- The graph view (right sidebar) shows how pages link together as the collection
-  grows.
+> Blockquotes look like this. Very distinguished.
+
+### Code
+
+```ts
+export function greet(name: string): string {
+  return `Hello, ${name}!`
+}
+```
+
+### Math
+
+Euler's identity: $e^{i\pi} + 1 = 0$
+
+### Table
+
+| Feature | Status |
+| ------- | ------ |
+| Themes  | 17     |
+| Plugins | 5      |
+
+### Callout
+
+> [!note]
+> Callouts render with theme-aware colors.
+
+### Lists
+
+1. Ordered item
+2. Another item
+   - Nested bullet
+   - Another nested bullet
+
+---
+
+Real sites live in child repos and bring their own `content/`, `quartz.config.yaml`, and `static/` branding. See the engine README for the child-site contract.

@@ -1,12 +1,14 @@
 # yaml-language-server: $schema=./quartz/plugins/quartz-plugins.schema.json
+# Engine dev-preview config. Child sites bring their OWN quartz.config.yaml —
+# it is never synced from here (scripts/build.sh excludes it).
 configuration:
-  pageTitle: Ashfall Software Docs
+  pageTitle: Tsunderick Quartz Engine
   pageTitleSuffix: ""
   enableSPA: true
   enablePopovers: true
   analytics: null
   locale: en-US
-  baseUrl: docs.ashfallsoftware.com
+  baseUrl: engine-preview.local
   ignorePatterns:
     - private
     - templates
@@ -283,7 +285,7 @@ plugins:
     enabled: true
     options:
       links:
-        GitHub: https://github.com/Ashfall-Software
+        GitHub: https://github.com/garciaErick/quartz-tsunderick-themes
     layout:
       position: footer
       priority: 50
