@@ -31,19 +31,21 @@ The entire point of this architecture: **make a change here, and every site gets
 
 The child's `quartz.config.yaml` **overlays** the engine's `quartz.config.default.yaml` (which `build.sh` extracts into every child site on each build). The merge is **replace-per-plugin**, implemented in `quartz/plugins/loader/merge-config.ts`:
 
-| Thing | Rule |
-| --- | --- |
-| Plugin entry with the same source | child entry replaces the engine's wholesale (`enabled`, `order`, `options`, `layout`) |
-| Engine default the child doesn't mention | inherited as-is — this is how engine-wide fixes ship |
-| Child-only entry | appended |
-| Opt out of an inherited default | list it in the child config with `enabled: false` |
-| `configuration` | shallow merge, child wins per key |
-| `layout.groups` | merged per group **and per field** — tweak one knob, inherit the rest |
-| `layout.byPageType` | merged per page type; `positions` per position; `exclude` child wins |
+| Thing                                    | Rule                                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- |
+| Plugin entry with the same source        | child entry replaces the engine's wholesale (`enabled`, `order`, `options`, `layout`) |
+| Engine default the child doesn't mention | inherited as-is — this is how engine-wide fixes ship                                  |
+| Child-only entry                         | appended                                                                              |
+| Opt out of an inherited default          | list it in the child config with `enabled: false`                                     |
+| `configuration`                          | shallow merge, child wins per key                                                     |
+| `layout.groups`                          | merged per group **and per field** — tweak one knob, inherit the rest                 |
+| `layout.byPageType`                      | merged per page type; `positions` per position; `exclude` child wins                  |
 
 `./plugins/foo` and `plugins/foo` count as the same source. The CLI (`npx quartz plugin add/remove/list`) still reads and writes the **raw** child file — inherited entries are only visible in the effective config the build loads (and in `npx quartz plugin install`, which uses the layered read so inherited external plugins get installed).
 
 Current engine-enforced defaults beyond upstream Quartz: `toc-true-depth` (order 51 — true heading levels in the TOC, pairs with the H-prefix styles in house `custom.scss`), `folder-alpha`, `h1-title`, `theme-switcher`, `graph-labels`.
+
+**H1 in the TOC:** style guides allow exactly one top-level H1 per page, and `h1-title` splices it out of the body as the article title before the TOC transformer runs — so `toc-true-depth` prepends it back as a synthetic first entry (`H1 <title>`, linking to the shared `#article-title` anchor that `h1-title`'s ArticleTitle renders; the TOC scroll-spy highlights it at the page top). Pages with no other TOC entries keep their no-TOC rendering. Opt out per site with `includeH1: false` on the `./plugins/toc-true-depth` entry.
 
 ### Shipping an engine-wide change
 

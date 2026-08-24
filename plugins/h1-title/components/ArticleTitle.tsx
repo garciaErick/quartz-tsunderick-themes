@@ -12,6 +12,11 @@ import type { QuartzComponentProps } from "@quartz-community/types"
  * Folder listings, breadcrumbs, explorer, search, graph and the tab title
  * keep reading frontmatter.title (the filename); only the article page
  * shows the heading text.
+ *
+ * The fixed id="article-title" anchor is shared BY CONVENTION with
+ * toc-true-depth, which prepends the title as the TOC's synthetic H1 entry
+ * (`{ depth: 1, slug: "article-title" }`) — that's what the entry links to,
+ * and the TOC scroll-spy (h1[id] observer) highlights it at the page top.
  */
 const ArticleTitle: QuartzComponent = ({ fileData, displayClass }: QuartzComponentProps) => {
   const h1Title = (fileData as { h1Title?: string } | undefined)?.h1Title
@@ -19,7 +24,11 @@ const ArticleTitle: QuartzComponent = ({ fileData, displayClass }: QuartzCompone
   if (!title) return null
 
   const classes = [displayClass, "article-title"].filter(Boolean).join(" ")
-  return <h1 class={classes}>{title}</h1>
+  return (
+    <h1 id="article-title" class={classes}>
+      {title}
+    </h1>
+  )
 }
 
 ArticleTitle.css = `

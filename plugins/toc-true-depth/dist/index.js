@@ -1,6 +1,8 @@
 // index.ts
+var ARTICLE_TITLE_ID = "article-title";
 var defaults = {
-  maxDepth: 3
+  maxDepth: 3,
+  includeH1: true
 };
 var TrueDepthToc = (userOpts) => {
   const opts = { ...defaults, ...userOpts };
@@ -26,9 +28,16 @@ var TrueDepthToc = (userOpts) => {
               }
             };
             walk(tree.children);
-            if (depths.length !== toc.length) return;
-            for (let i = 0; i < toc.length; i++) {
-              toc[i].depth = depths[i];
+            if (depths.length === toc.length) {
+              for (let i = 0; i < toc.length; i++) {
+                toc[i].depth = depths[i];
+              }
+            }
+            if (opts.includeH1 && !toc.some((e) => e.slug === ARTICLE_TITLE_ID)) {
+              const h1Title = file.data.h1Title ?? file.data.frontmatter?.title;
+              if (h1Title) {
+                toc.unshift({ depth: 1, slug: ARTICLE_TITLE_ID, text: h1Title });
+              }
             }
           };
         }

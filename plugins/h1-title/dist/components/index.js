@@ -5,7 +5,7 @@ var ArticleTitle = ({ fileData, displayClass }) => {
   const title = h1Title ?? fileData.frontmatter?.title;
   if (!title) return null;
   const classes = [displayClass, "article-title"].filter(Boolean).join(" ");
-  return /* @__PURE__ */ jsx("h1", { class: classes, children: title });
+  return /* @__PURE__ */ jsx("h1", { id: "article-title", class: classes, children: title });
 };
 ArticleTitle.css = `
 .article-title {
