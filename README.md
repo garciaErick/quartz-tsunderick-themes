@@ -25,6 +25,22 @@ Everything else (Quartz core, plugins, themes, `package.json`, build tooling) co
 
 ## Composing and building
 
+### First-time setup (fresh clone)
+
+A fresh clone has an empty `engine/` — submodules store a pointer, not files:
+
+```bash
+git submodule update --init    # clones the engine at the pinned commit
+```
+
+Builds run on the node version pinned by the child's `.node-version`. With mise:
+
+```bash
+mise exec node@22.16.0 -- bash engine/scripts/build.sh --serve
+```
+
+`build.sh` warns (but does not fail) when the running node major differs from the pin.
+
 Run from the child site:
 
 ```bash
@@ -137,3 +153,27 @@ Then run `bash engine/scripts/update-engine.sh` in each child site to pick it up
 ## Engine-only development
 
 The engine has its own placeholder page (`content/index.md`, a theme preview). `npx quartz build --serve` here serves it — handy for trying out new themes and fonts before any site consumes them. (The compose scripts intentionally refuse to run outside a child site.)
+
+## Troubleshooting
+
+### `sharp: Attempting to build from source via node-gyp` / `Please add node-gyp to your dependencies`
+
+sharp ships prebuilt binaries (the `@img/sharp-*` optional deps) and never needs to compile on stock systems. On machines with a **system-wide libvips** (check: `pkg-config --modversion vips-cpp` — e.g. Arch's `libvips` package), sharp's install script detects it, rejects the prebuilt, and insists on compiling against the global copy — which fails without a node-gyp toolchain. Worse, the `npm ci` failure rollback scrubs `node_modules`, which looks like packages "vanishing".
+
+Since engine commit `99e484b`, `build.sh` exports `SHARP_IGNORE_GLOBAL_LIBVIPS=1` to force the bundled prebuilt, so current pins are immune. Workaround on an older pin:
+
+```bash
+SHARP_IGNORE_GLOBAL_LIBVIPS=1 bash engine/scripts/build.sh
+```
+
+### Native dep install failures under a different node than `.node-version`
+
+Symptoms are misleading — sharp demanding a source build, esbuild binary mismatches, odd ABI errors. Run the pinned version instead (build.sh warns on major mismatch):
+
+```bash
+mise exec node@$(cat .node-version) -- bash engine/scripts/build.sh
+```
+
+### `ERESOLVE could not resolve` (`rehype-typst` peer conflict) — latent
+
+The engine pins `@myriaddreamin/rehype-typst@^0.6.0`, while `@quartz-community/latex@0.1.0` declares `rehype-typst@^0.5.0` as an optional peer. The engine's `.npmrc` (extracted into every child site) sets `legacy-peer-deps=true`, which suppresses the conflict during `npm ci`. Harmless today — but if you remove that flag or bump either package, expect `npm ci` to refuse until the versions re-align.
