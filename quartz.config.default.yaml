@@ -177,7 +177,7 @@ plugins:
       position: left
       priority: 20
       group: toolbar
-  - source: "@quartz-community/backlinks"
+  - source: "./plugins/backlinks-collapse"
     enabled: true
     layout:
       position: right
@@ -208,7 +208,7 @@ plugins:
       position: left
       priority: 30
       group: toolbar
-  - source: "@quartz-community/reader-mode"
+  - source: "./plugins/reader-zen"
     enabled: true
     layout:
       position: left
@@ -301,12 +301,12 @@ layout:
     content: {}
     folder:
       exclude:
-        - reader-mode
+        - reader-zen
       positions:
         right: []
     tag:
       exclude:
-        - reader-mode
+        - reader-zen
       positions:
         right: []
     canvas: {}

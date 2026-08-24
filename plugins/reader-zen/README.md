@@ -1,0 +1,33 @@
+# reader-zen
+
+Zen reader mode — a house wrapper around
+[`@quartz-community/reader-mode`](https://github.com/quartz-community/reader-mode).
+
+The toolbar button behaves exactly like upstream reader mode (toggles
+`html[reader-mode]`, dispatches `readermodechange`). While reader mode is
+**on**, a floating pill appears at the bottom-center of the viewport with two
+persistent reading options:
+
+| Toggle       | html attribute            | Effect                                                                           |
+| ------------ | ------------------------- | -------------------------------------------------------------------------------- |
+| _Italic_     | `[data-zen-italic="on"]`  | Article body text (`p`, `li`, `blockquote`) renders italic                       |
+| _Full width_ | `[data-zen-width="full"]` | Sidebars leave the grid entirely, `.page` uncaps its max-width, breadcrumbs hide |
+
+Both persist in `localStorage` (`quartz-zen-italic`, `quartz-zen-width`) and
+only take effect while reader mode is on — the attributes are inert outside
+it. The pill is re-created on every SPA `nav` (with `addCleanup` teardown),
+so it survives client-side navigation safely.
+
+## Styling home
+
+The zen rules live in the engine's `quartz/styles/custom.scss`, **unlayered**
+on purpose: they must beat both the layered base layout (`.page` max-width,
+the `#quartz-body` grid) and any unlayered theme css loaded later. See the
+layering-hazard note at the top of that file.
+
+## Layout
+
+Registered as a single component (`ReaderMode`) — layout defaults to the
+left sidebar toolbar, priority 35 (same as upstream reader-mode). Page-type
+layout excludes that referenced `reader-mode` by name should reference
+`reader-zen` instead.

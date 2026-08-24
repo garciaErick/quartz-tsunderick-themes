@@ -1,6 +1,20 @@
 @use "./variables.scss" as *;
 
 // put your custom CSS here!
+//
+// ⚠ CASCADE LAYERING HAZARD — read before adding rules below ⚠
+//
+// The emitted stylesheet is `@layer quartz-base { …engine + plugin CSS… }`
+// followed by this file UNLAYERED. Unlayered declarations beat ANY layered
+// declaration regardless of specificity. That means a rule here like
+// `.sidebar .toc { flex: 0 0 auto }` silently disables a plugin's own
+// `.toc:has(button.toc-header.collapsed) { flex: 0 1 1.4rem }` collapse
+// state forever (this really happened — see the guards below).
+//
+// Rules here that must COEXIST with interactive plugin state classes
+// (`.collapsed`, `[reader-mode=on]`, …) need to explicitly stand down when
+// that state is active — hence the `:not(:has(…collapsed))` guards used
+// throughout this file.
 
 // Mermaid compat pin for the baked theme (@quartz-themes/lattelogic).
 // lattelogic defines its accents via hsl(calc(...)) chains:
@@ -37,16 +51,20 @@
 //   2. the TOC plugin's `ul.toc-content.overflow { max-height: calc(100% - 2rem) }`
 //   3. the TOC container's `flex: 0 0.5 auto` (shrinkable) plus base.scss's
 //      `div:has(> .overflow) { max-height: 100%; overflow-y: hidden }`
-// Overriding all three lets the list render at its natural height. Space
-// pressure is then handled by the sidebar scroll below, not by squashing
-// any section. Selectors are kept specific enough to win regardless of
-// stylesheet order.
-.sidebar .toc {
+// Selectors are kept specific enough to win regardless of stylesheet order.
+//
+// COLLAPSE GUARDS: every rule below is scoped with
+// `:not(:has(button.toc-header.collapsed))` so it stands down when the TOC
+// is collapsed. Without the guard the unlayered `flex: 0 0 auto` /
+// `max-height: none` here would forever beat the TOC plugin's layered
+// `.toc:has(button.toc-header.collapsed) { flex: 0 1 1.4rem }` — clicking
+// the header toggled classes but the box never shrank.
+.sidebar .toc:not(:has(button.toc-header.collapsed)) {
   flex: 0 0 auto; // never shrink below content height
   max-height: none;
 }
 
-.sidebar .toc ul.toc-content.overflow {
+.sidebar .toc ul.toc-content.overflow:not(.collapsed) {
   max-height: none;
   overflow-y: visible;
 }
@@ -67,13 +85,17 @@
     overscroll-behavior: contain;
   }
 
-  .sidebar .backlinks {
+  // Guards: plugins/backlinks-collapse renders a button.backlinks-header
+  // whose .collapsed state must shrink the section (mirroring the TOC).
+  // These no-squish rules stand down while collapsed — same layering
+  // contract as the TOC guards above.
+  .sidebar .backlinks:not(:has(button.backlinks-header.collapsed)) {
     flex: 0 0 auto; // never shrink below content height
     max-height: none; // counter base.scss's div:has(> .overflow) clip
     overflow-y: visible;
   }
 
-  .sidebar .backlinks ul.overflow {
+  .sidebar .backlinks ul.overflow:not(.collapsed) {
     max-height: none; // counter component + base.scss caps
     overflow-y: visible;
   }
@@ -106,11 +128,19 @@
     }
   }
 
-  .sidebar .toc {
+  // Collapsed clips to the header row (cards are flex ROWS below desktop,
+  // so flex-basis sizes width, not height — collapse via max-height).
+  // Guarded 24rem cap for the same layering reasons as above.
+  .sidebar .toc:has(button.toc-header.collapsed) {
+    max-height: 1.4rem;
+    flex: 1 1 240px;
+  }
+
+  .sidebar .toc:not(:has(button.toc-header.collapsed)) {
     max-height: 24rem; // match the other cards' stock cap
   }
 
-  .sidebar .toc ul.toc-content.overflow {
+  .sidebar .toc ul.toc-content.overflow:not(.collapsed) {
     max-height: 100%;
     overflow-y: auto; // scroll inside the card only on narrow viewports
   }
@@ -214,4 +244,137 @@
   position: absolute;
   top: calc(50% - 10px);
   left: 0;
+}
+
+// Reader mode: unlayered baseline so hiding always works.
+//
+// @quartz-community/reader-mode's own `.sidebar { opacity: 0 }` rules ship
+// in the LAYERED component css, where any unlayered rule (a theme css, a
+// future entry here) can override them — on an earlier theme build exactly
+// that left the sidebars stuck visible with reader mode on. This baseline
+// is unlayered (wins over everything layered) and only overridden by the
+// SAME hover-reveal exception upstream intends: hover brings a sidebar
+// back while reader mode is on. The toolbar stays put (it's a child of
+// .sidebar.left — keep it reachable so reader mode can be toggled off).
+:root[reader-mode="on"] {
+  & .sidebar.left,
+  & .sidebar.right {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// Zen mode (plugins/reader-zen) — reader mode sub-settings.
+//
+// The reader-mode button stays what it was; while reader mode is ON, a
+// floating pill offers "italic" and "full width" toggles that persist in
+// localStorage and set html[data-zen-italic] / html[data-zen-width]. Both
+// only do anything under [reader-mode="on"] — outside reader mode the
+// attributes are inert.
+//
+// These rules live here UNLAYERED on purpose: they must beat both the
+// layered base layout (.page max-width, the #quartz-body grid) and any
+// unlayered theme css loaded after this stylesheet. Specificity
+// (:root[attr][attr] … = (0,2,1)+ per selector) outranks every stock
+// single-class theme rule at equal layer, so no doubling is needed.
+:root[reader-mode="on"][data-zen-italic="on"] {
+  & article p,
+  & article li,
+  & article blockquote {
+    font-style: italic;
+  }
+}
+
+// Full width: reclaim the sidebar grid columns entirely — the sidebars
+// aren't merely faded (they still occupy their grid columns and the
+// content column stays capped), they're removed from layout, exactly like
+// the built-in full-width frame does. Breadcrumbs go too (reading chrome);
+// the footer stays (normal flow, end of page).
+//
+// Selectors carry #quartz-root/#quartz-body because the baked theme css
+// caps content width with double-ID rules
+// (`div#quartz-root.page div#quartz-body { max-width: min(100%, 1500px) }`,
+// specificity (2,2,2)) loaded AFTER this sheet — class-only zen rules
+// would lose to it. The html attribute selectors put these back on top
+// ((2,4,0) and up) in every theme, baked or runtime-selected.
+:root[reader-mode="on"][data-zen-width="full"] {
+  & #quartz-root.page {
+    max-width: 100%;
+  }
+
+  & #quartz-root.page #quartz-body {
+    width: 100%;
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "grid-header"
+      "grid-center"
+      "grid-footer";
+    column-gap: 0;
+
+    & .sidebar.left,
+    & .sidebar.right {
+      display: none;
+    }
+  }
+
+  & .breadcrumbs {
+    display: none;
+  }
+}
+
+// The zen control pill itself. Fixed, bottom-center, above content; only
+// exists in the DOM while reader mode is on (the script adds/removes it
+// on every nav — SPA-safe).
+.zen-controls {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 999px;
+  background: var(--light);
+  border: 1px solid var(--lightgray);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+
+  &:hover,
+  &:focus-within {
+    opacity: 1;
+  }
+}
+
+.zen-controls .zen-toggle {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0.15rem 0.6rem;
+  min-width: 2rem;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--darkgray);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  font-family: var(--bodyFont);
+
+  &[aria-pressed="true"] {
+    background: var(--tertiary);
+    color: var(--light);
+  }
+
+  &.zen-italic {
+    font-style: italic;
+    font-family: var(--bodyFont);
+    font-weight: 600;
+  }
 }
