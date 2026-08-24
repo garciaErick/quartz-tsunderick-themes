@@ -1,6 +1,6 @@
 {
   "name": "font-switcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "private": true,
   "description": "Runtime font dropdown for Quartz v5: self-hosts the configured fonts (@font-face + static/fonts/) and adds a toolbar picker that swaps the site typeface at runtime.",
@@ -21,7 +21,7 @@
     "name": "font-switcher",
     "displayName": "Font Switcher",
     "description": "Runtime font dropdown: self-hosted fonts with a toolbar picker that swaps the site typeface.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "Ashfall Software",
     "license": "MIT",
     "category": [
@@ -37,7 +37,7 @@
         "name": "FontSwitcher",
         "displayName": "Font Switcher",
         "description": "Toolbar dropdown for switching the site font at runtime",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "defaultPosition": "left",
         "defaultPriority": 33
       }

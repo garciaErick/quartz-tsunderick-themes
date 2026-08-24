@@ -125,13 +125,24 @@ ${faces.join("\n")}
 }
 
 /**
- * Full-site override CSS for one font. `guarded` scopes every rule under
- * html:not([data-font-selected]) so the baked default stands down the
- * moment a runtime font is selected (mirrors theme-switcher's guard).
+ * Full-site override CSS for one font.
+ *
+ * Selector design — switching must depend on NOTHING but the presence of
+ * html[data-font-selected]:
+ *
+ *  - baked (guarded):   html:not([data-font-selected]) …  — specificity (0,1,1)
+ *  - runtime (selected): html[data-font-selected] …      — specificity (0,1,1)
+ *
+ * Both beat any plain :root definition (0,1,0) of the same custom
+ * properties regardless of stylesheet order, so Quartz's SPA head morph
+ * (which reshuffles non-persisted links) can never flip the outcome, and
+ * the two states are mutually exclusive by attribute alone — no link
+ * disabling, no CSSOM `disabled` round-trips (notoriously quirky per
+ * engine), nothing to drift.
  */
 function overrideCss(def: FontDefinition, guarded: boolean): string {
-  const scope = guarded ? "html:not([data-font-selected])" : ":root"
-  const prefix = guarded ? "html:not([data-font-selected]) " : ""
+  const scope = guarded ? "html:not([data-font-selected])" : "html[data-font-selected]"
+  const prefix = guarded ? "html:not([data-font-selected]) " : "html[data-font-selected] "
   const stack = fontStack(def)
   const headings = ["h1", "h2", "h3", "h4", "h5", "h6"]
     .map((heading) => `${prefix}${heading}`)
@@ -152,8 +163,8 @@ ${scope} {
   --codeFont: ${stack};
 }
 
-/* quartz-fonts emits concrete unlayered h1–h6 rules; re-assert with one
-   extra specificity notch so the selected font wins regardless of head order. */
+/* The page css emits concrete h1–h6 rules; re-assert the family one
+   specificity notch up so the selected font wins regardless of head order. */
 ${headings} {
   font-family: ${stack};
 }

@@ -69,8 +69,8 @@ ${faces.join("\n")}
 `;
 }
 function overrideCss(def, guarded) {
-  const scope = guarded ? "html:not([data-font-selected])" : ":root";
-  const prefix = guarded ? "html:not([data-font-selected]) " : "";
+  const scope = guarded ? "html:not([data-font-selected])" : "html[data-font-selected]";
+  const prefix = guarded ? "html:not([data-font-selected]) " : "html[data-font-selected] ";
   const stack = fontStack(def);
   const headings = ["h1", "h2", "h3", "h4", "h5", "h6"].map((heading) => `${prefix}${heading}`).join(", ");
   return `/* font-switcher: ${def.id} (${def.family}) \u2014 full-site font override */
@@ -88,8 +88,8 @@ ${scope} {
   --codeFont: ${stack};
 }
 
-/* quartz-fonts emits concrete unlayered h1\u2013h6 rules; re-assert with one
-   extra specificity notch so the selected font wins regardless of head order. */
+/* The page css emits concrete h1\u2013h6 rules; re-assert the family one
+   specificity notch up so the selected font wins regardless of head order. */
 ${headings} {
   font-family: ${stack};
 }
