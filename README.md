@@ -13,7 +13,7 @@ A child site repo contains **only site-specific files**:
 ```
 my-site/
 ├── content/               # markdown (required)
-├── quartz.config.yaml     # pageTitle, baseUrl, colors, fonts, plugin toggles (required)
+├── quartz.config.yaml     # identity (pageTitle, baseUrl, colors, fonts) + overrides on top of the engine default (required)
 ├── engine/                # git submodule → this repo, pinned SHA (required)
 ├── static/                # optional: icon.png, og-image.png → overlaid onto quartz/static/
 ├── styles/custom.scss     # optional: APPENDED after the engine's house styles
@@ -22,6 +22,36 @@ my-site/
 ```
 
 Everything else (Quartz core, plugins, themes, `package.json`, build tooling) comes from the engine at the pinned SHA — so compose logic can never drift from the engine version being composed.
+
+## The golden rule: fix it in the engine
+
+The entire point of this architecture: **make a change here, and every site gets it on its next engine bump.** Child repos carry only content + identity (`pageTitle`, `baseUrl`, theme, and toggles that genuinely differ). If you ever find yourself editing the same thing in more than one child config, that change belongs in the engine — that's the maintenance model.
+
+### Config layering
+
+The child's `quartz.config.yaml` **overlays** the engine's `quartz.config.default.yaml` (which `build.sh` extracts into every child site on each build). The merge is **replace-per-plugin**, implemented in `quartz/plugins/loader/merge-config.ts`:
+
+| Thing | Rule |
+| --- | --- |
+| Plugin entry with the same source | child entry replaces the engine's wholesale (`enabled`, `order`, `options`, `layout`) |
+| Engine default the child doesn't mention | inherited as-is — this is how engine-wide fixes ship |
+| Child-only entry | appended |
+| Opt out of an inherited default | list it in the child config with `enabled: false` |
+| `configuration` | shallow merge, child wins per key |
+| `layout.groups` | merged per group **and per field** — tweak one knob, inherit the rest |
+| `layout.byPageType` | merged per page type; `positions` per position; `exclude` child wins |
+
+`./plugins/foo` and `plugins/foo` count as the same source. The CLI (`npx quartz plugin add/remove/list`) still reads and writes the **raw** child file — inherited entries are only visible in the effective config the build loads (and in `npx quartz plugin install`, which uses the layered read so inherited external plugins get installed).
+
+Current engine-enforced defaults beyond upstream Quartz: `toc-true-depth` (order 51 — true heading levels in the TOC, pairs with the H-prefix styles in house `custom.scss`), `folder-alpha`, `h1-title`, `theme-switcher`, `graph-labels`.
+
+### Shipping an engine-wide change
+
+1. Implement it here (plugin, house style, or a new `quartz.config.default.yaml` entry), add tests, `npm test && npm run check`.
+2. Commit + push **this** repo — children can only fetch engine commits that exist on `main`.
+3. In each child: `bash engine/scripts/update-engine.sh`, review, push the child. That push **is** the deploy.
+
+Rollback stays trivial: the child's bump is a normal commit (`git revert HEAD`), so a bad engine change unwinds per-site without touching the others.
 
 ## Composing and building
 

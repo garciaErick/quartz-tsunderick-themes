@@ -73,6 +73,14 @@ plugins:
     layout:
       position: right
       priority: 30
+  # Engine house plugin: rewrite TOC entry depths to TRUE heading levels
+  # (H2/H3/…) instead of upstream's level-relative normalization, so the
+  # custom.scss H-prefixes and indentation render correctly. Must run right
+  # after the TOC transformer (order 50). Children inherit this entry via
+  # config layering; opt out with an enabled: false entry in the child config.
+  - source: "./plugins/toc-true-depth"
+    enabled: true
+    order: 51
   - source: "@quartz-community/crawl-links"
     enabled: true
     options:
