@@ -105,6 +105,26 @@
   }
 }
 
+// Collapsible section headers (TOC + backlinks): keep theme heading styles out.
+//
+// quartz-themes style `body h3` UNLAYERED (big margins, paddings, colors,
+// dotted borders — e.g. `html:not([data-theme-selected])[saved-theme=dark]
+// body h3` at (0,2,3)), which inflates the section header buttons to ~84px
+// and wrecks their collapsed row. The plugins' own layered
+// `button.*-header h3 { margin: 0 }` can never win against an unlayered
+// rule regardless of specificity — so pin the reset here, unlayered, with
+// :root+class specificity ((0,3,2)) that outranks both theme variants.
+:root .sidebar button.toc-header h3,
+:root .sidebar button.backlinks-header h3 {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  display: inline-block;
+  font-size: 1rem;
+  color: inherit; // the header button's var(--dark), not the theme's h3 color
+}
+
 // Below desktop (<1200px): show the TOC and keep all sidebar cards usable.
 //
 // Upstream base.scss hides the TOC entirely on narrow viewports
