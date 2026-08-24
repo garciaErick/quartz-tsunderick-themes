@@ -168,3 +168,50 @@
     content: "H6 ";
   }
 }
+
+// Search: icon-only toolbar button.
+//
+// The toolbar control from @quartz-community/search is styled as an
+// input-shaped box with a "Search" label, but the real input lives in the
+// fullscreen overlay (click / Ctrl+K) — the box is a button pretending to
+// be a text field. Restyle it as a bare magnifier icon matching the other
+// toolbar toggles (darkmode, theme, font, reader): 20×32 hit area,
+// absolutely-centered 20px svg, no label.
+//
+// Selectors are specificity-doubled (.search.search, .search-button.search-button)
+// because this stylesheet compiles into the page css, which loads BEFORE
+// the search component's css — same-specificity overrides would lose by
+// document order. Doubled classes outscope the package rules everywhere,
+// including its max-width: 800px media block.
+.search.search {
+  min-width: 0;
+  max-width: none;
+  flex-grow: 0; /* package sets flex-grow: 0.3 under 800px; an icon must not stretch */
+}
+
+.search > .search-button.search-button {
+  width: 20px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  position: relative;
+  /* inline-block (like the darkmode/theme/font toggles) rather than the
+     package's flex: the baseline-strut line box top-aligns the button in
+     its wrapper exactly like its siblings; a block-level button would
+     center 2px lower in the toolbar row */
+  display: inline-block;
+}
+
+.search > .search-button.search-button > p {
+  display: none;
+}
+
+.search > .search-button.search-button svg {
+  width: 20px;
+  min-width: 20px;
+  margin: 0;
+  position: absolute;
+  top: calc(50% - 10px);
+  left: 0;
+}

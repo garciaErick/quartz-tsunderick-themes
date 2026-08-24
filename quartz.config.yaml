@@ -234,9 +234,6 @@ plugins:
       position: left
       priority: 20
       group: toolbar
-      groupOptions:
-        grow: true
-        basis: "100%"
   - source: "@quartz-community/backlinks"
     enabled: true
     layout:
@@ -345,7 +342,6 @@ layout:
     toolbar:
       priority: 35
       direction: row
-      wrap: wrap
       gap: 0.5rem
   byPageType:
     "404":
