@@ -212,16 +212,8 @@ plugins:
     layout:
       position: left
       priority: 50
-  - source: "@quartz-community/graph"
-    enabled: false
-    layout:
-      position: right
-      priority: 10
-  - source: "./plugins/graph-labels"
-    enabled: true
-    layout:
-      position: right
-      priority: 30
+  # Graph setup (upstream disabled, house wrapper at bottom) inherited from
+  # quartz.config.default.yaml — no local entries needed.
   - source: "@quartz-community/search"
     enabled: true
     layout:

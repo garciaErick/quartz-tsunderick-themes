@@ -143,11 +143,20 @@ plugins:
     layout:
       position: left
       priority: 50
+  # House graph: ./plugins/graph-labels (below) wraps upstream Graph with
+  # always-visible node labels. Upstream's own entry stays listed but
+  # disabled as the visible opt-anchor — enable it (and disable the wrapper)
+  # to return to stock label behavior.
   - source: "@quartz-community/graph"
-    enabled: true
+    enabled: false
     layout:
       position: right
       priority: 10
+  - source: "./plugins/graph-labels"
+    enabled: true
+    layout:
+      position: right
+      priority: 60 # canonical right-sidebar order: TOC (30) → backlinks (50) → graph (60, bottom)
   - source: "@quartz-community/search"
     enabled: true
     layout:

@@ -45,7 +45,11 @@ The child's `quartz.config.yaml` **overlays** the engine's `quartz.config.defaul
 
 Current engine-enforced defaults beyond upstream Quartz: `toc-true-depth` (order 51 — true heading levels in the TOC, pairs with the H-prefix styles in house `custom.scss`), `folder-alpha`, `h1-title`, `theme-switcher`, `graph-labels`.
 
+**Right-sidebar canonical order** (engine-enforced): TOC (priority 30) → backlinks (50) → graph (60, bottom). The graph is the house `./plugins/graph-labels` wrapper (always-visible node labels); upstream `@quartz-community/graph` stays listed-but-disabled as the visible opt-anchor. Opt out per site: disable the wrapper entry (and re-enable upstream) in the child config, or give either a different `priority` to reposition it.
+
 **H1 in the TOC:** style guides allow exactly one top-level H1 per page, and `h1-title` splices it out of the body as the article title before the TOC transformer runs — so `toc-true-depth` prepends it back as a synthetic first entry (`H1 <title>`, linking to the shared `#article-title` anchor that `h1-title`'s ArticleTitle renders; the TOC scroll-spy highlights it at the page top). Pages with no other TOC entries keep their no-TOC rendering. Opt out per site with `includeH1: false` on the `./plugins/toc-true-depth` entry.
+
+**Per-site identity** (child-owned, never engine): `pageTitle`/`baseUrl`, fonts/colors, `static/icon.png` + `static/og-image.png` branding.
 
 ### Shipping an engine-wide change
 
