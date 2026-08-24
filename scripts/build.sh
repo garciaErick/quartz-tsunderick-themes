@@ -94,6 +94,11 @@ if [ -f styles/custom.scss ]; then
 fi
 
 # --- 4) install (skipped when the lockfile hash matches the last install)
+# Always use sharp's prebuilt binaries: if the dev machine has a system libvips
+# (e.g. Arch's libvips package, detected via /usr/lib/pkgconfig/vips-cpp.pc),
+# sharp's install script rejects the prebuilt and insists on building from
+# source with node-gyp — which fails on machines without a build toolchain.
+export SHARP_IGNORE_GLOBAL_LIBVIPS=1
 STAMP=".engine-deps-stamp"
 LOCK_HASH=$(sha256sum package-lock.json | cut -d' ' -f1)
 if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$LOCK_HASH" ] && [ -d node_modules ]; then
