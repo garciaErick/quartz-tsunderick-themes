@@ -179,6 +179,22 @@ plugins:
       position: left
       priority: 32
       group: toolbar
+  - source: "./plugins/font-switcher" # engine plugin: the font dropdown
+    enabled: true
+    order: 61
+    options:
+      # bakedFont is the site default (applied with JS off, before any
+      # script runs). "default" in the fonts list always means this font.
+      bakedFont: operator-mono
+      fonts: # trim this list to the fonts you want in the menu
+        - id: default
+          label: Operator Mono
+        - id: jetbrains-mono
+          label: JetBrains Mono
+    layout:
+      position: left
+      priority: 33
+      group: toolbar
   - source: "@quartz-community/remove-draft"
     enabled: true
   - source: "@quartz-community/explicit-publish"

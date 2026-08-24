@@ -1,6 +1,6 @@
 # quartz-tsunderick-themes
 
-Shared **Quartz v5 engine + design system** for all Tsunderick/Ashfall sites. This repo holds the UI: the Quartz core, house styles, custom plugins (theme switcher with 17 themes, folder sorting, graph labels, H1 titles, true-depth TOC), the explorer configuration, the child-site build tooling (`scripts/`), and starter templates for new sites (`templates/`).
+Shared **Quartz v5 engine + design system** for all Tsunderick/Ashfall sites. This repo holds the UI: the Quartz core, house styles, custom plugins (theme switcher with 17 themes, font switcher with self-hosted Operator Mono + JetBrains Mono, folder sorting, graph labels, H1 titles, true-depth TOC), the explorer configuration, the child-site build tooling (`scripts/`), and starter templates for new sites (`templates/`).
 
 Individual websites ("child sites") live in their own repos and contain **only content + configuration** — no build logic. They pull this engine in as a git submodule pinned to an exact commit.
 
@@ -43,7 +43,7 @@ The child's `quartz.config.yaml` **overlays** the engine's `quartz.config.defaul
 
 `./plugins/foo` and `plugins/foo` count as the same source. The CLI (`npx quartz plugin add/remove/list`) still reads and writes the **raw** child file — inherited entries are only visible in the effective config the build loads (and in `npx quartz plugin install`, which uses the layered read so inherited external plugins get installed).
 
-Current engine-enforced defaults beyond upstream Quartz: `toc-true-depth` (order 51 — true heading levels in the TOC, pairs with the H-prefix styles in house `custom.scss`), `folder-alpha`, `h1-title`, `theme-switcher`, `graph-labels`.
+Current engine-enforced defaults beyond upstream Quartz: `toc-true-depth` (order 51 — true heading levels in the TOC, pairs with the H-prefix styles in house `custom.scss`), `folder-alpha`, `h1-title`, `theme-switcher`, `font-switcher`, `graph-labels`.
 
 **Right-sidebar canonical order** (engine-enforced): TOC (priority 30) → backlinks (50) → graph (60, bottom). The graph is the house `./plugins/graph-labels` wrapper (always-visible node labels); upstream `@quartz-community/graph` stays listed-but-disabled as the visible opt-anchor. Opt out per site: disable the wrapper entry (and re-enable upstream) in the child config, or give either a different `priority` to reposition it.
 

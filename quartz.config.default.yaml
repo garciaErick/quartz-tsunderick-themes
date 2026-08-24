@@ -113,6 +113,20 @@ plugins:
     options:
       theme: tokyo-night
       mode: both
+  - source: "./plugins/font-switcher"
+    enabled: true
+    order: 61
+    options:
+      bakedFont: operator-mono
+      fonts:
+        - id: default
+          label: Operator Mono
+        - id: jetbrains-mono
+          label: JetBrains Mono
+    layout:
+      position: left
+      priority: 33
+      group: toolbar
   - source: "@quartz-community/remove-draft"
     enabled: true
   - source: "@quartz-community/explicit-publish"

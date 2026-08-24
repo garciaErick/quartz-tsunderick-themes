@@ -1,0 +1,46 @@
+{
+  "name": "font-switcher",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Runtime font dropdown for Quartz v5: self-hosts the configured fonts (@font-face + static/fonts/) and adds a toolbar picker that swaps the site typeface at runtime.",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./components": {
+      "import": "./dist/components/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "quartz": {
+    "name": "font-switcher",
+    "displayName": "Font Switcher",
+    "description": "Runtime font dropdown: self-hosted fonts with a toolbar picker that swaps the site typeface.",
+    "version": "1.0.0",
+    "author": "Ashfall Software",
+    "license": "MIT",
+    "category": [
+      "emitter",
+      "component"
+    ],
+    "quartzVersion": ">=5.0.0",
+    "defaultOrder": 61,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "FontSwitcher": {
+        "name": "FontSwitcher",
+        "displayName": "Font Switcher",
+        "description": "Toolbar dropdown for switching the site font at runtime",
+        "version": "1.0.0",
+        "defaultPosition": "left",
+        "defaultPriority": 33
+      }
+    }
+  }
+}
