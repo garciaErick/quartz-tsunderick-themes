@@ -37,6 +37,22 @@ fi
 
 cd "$SITE_ROOT"
 
+# --- 0) node version sanity: warn (don't fail) when the running major differs
+#         from the child's .node-version pin — native deps (sharp, esbuild)
+#         are validated per release line, and a mismatch produces confusing
+#         install failures far from the cause
+if [ -f .node-version ]; then
+  PINNED_NODE="$(tr -d '[:space:]' < .node-version)"
+  PINNED_MAJOR="${PINNED_NODE#v}"; PINNED_MAJOR="${PINNED_MAJOR%%.*}"
+  RUNNING_MAJOR="$(node --version 2>/dev/null || true)"
+  RUNNING_MAJOR="${RUNNING_MAJOR#v}"; RUNNING_MAJOR="${RUNNING_MAJOR%%.*}"
+  if [ -n "$PINNED_MAJOR" ] && [ -n "$RUNNING_MAJOR" ] && [ "$PINNED_MAJOR" != "$RUNNING_MAJOR" ]; then
+    echo "warning: running node v$RUNNING_MAJOR but .node-version pins $PINNED_NODE" >&2
+    echo "  native deps (sharp, esbuild) may fail to install on an unpinned node" >&2
+    echo "  suggested: mise exec node@$PINNED_NODE -- bash engine/scripts/build.sh" >&2
+  fi
+fi
+
 # --- 1) nuke engine-owned dirs (prevents stale-file drift between bumps)
 rm -rf quartz plugins
 
