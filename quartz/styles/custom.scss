@@ -125,6 +125,16 @@
   color: inherit; // the header button's var(--dark), not the theme's h3 color
 }
 
+// …and the backlinks pane itself: themes also style `body .backlinks` as a
+// padded Obsidian pane (padding-block 4px 32px + 12px inline, (0,2,2)
+// unlayered) — which bloats the collapsed row to ~58px and indents the
+// header 12px against the TOC's flush 0. Neutralize at (0,3,0) so the
+// collapsible section aligns with the TOC; the list's own margins
+// (`.backlinks ul.overflow { margin: .5rem 0 }`) still breathe.
+:root .sidebar .backlinks {
+  padding: 0;
+}
+
 // Below desktop (<1200px): show the TOC and keep all sidebar cards usable.
 //
 // Upstream base.scss hides the TOC entirely on narrow viewports
