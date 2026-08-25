@@ -9,7 +9,9 @@ var zenScript = `
   var italic = false
   var full = false
   try { italic = localStorage.getItem(LS_ITALIC) === "on" } catch (e) {}
-  try { full = localStorage.getItem(LS_WIDTH) === "full" } catch (e) {}
+  // Full width defaults ON: only an explicit stored "normal" opts out, so
+  // first-time entry is actually distraction-free (not fade-only + italic).
+  try { full = localStorage.getItem(LS_WIDTH) !== "normal" } catch (e) {}
 
   function store(key, value) {
     try { localStorage.setItem(key, value) } catch (e) {}
@@ -25,6 +27,12 @@ var zenScript = `
     var on = mode ? "on" : "off"
     document.documentElement.setAttribute("reader-mode", on)
     document.dispatchEvent(new CustomEvent("readermodechange", { detail: { mode: on } }))
+  }
+
+  function exitMode() {
+    mode = false
+    applyMode()
+    ensurePill()
   }
 
   function makeToggle(className, label, isOn, onclick) {
@@ -49,13 +57,23 @@ var zenScript = `
     pill.setAttribute("role", "group")
     pill.setAttribute("aria-label", "Reading options")
 
+    // Exit: the guaranteed escape hatch \u2014 in full-width zen the toolbar
+    // reader button is unreachable (its sidebar left the layout).
+    var exitButton = document.createElement("button")
+    exitButton.type = "button"
+    exitButton.className = "zen-toggle zen-exit"
+    exitButton.title = "Exit reader mode (Escape)"
+    exitButton.setAttribute("aria-label", "Exit reader mode")
+    exitButton.textContent = "Exit"
+    exitButton.addEventListener("click", exitMode)
+
     var italicButton = makeToggle("zen-italic", "Italic body text", italic, function () {
       italic = !italic
       store(LS_ITALIC, italic ? "on" : "off")
       applyZen()
       ensurePill()
     })
-    italicButton.textContent = "I"
+    italicButton.textContent = "Italic"
 
     var widthButton = makeToggle("zen-width", "Full width", full, function () {
       full = !full
@@ -63,8 +81,9 @@ var zenScript = `
       applyZen()
       ensurePill()
     })
-    widthButton.textContent = "\\u29E2"
+    widthButton.textContent = "Full width"
 
+    pill.appendChild(exitButton)
     pill.appendChild(italicButton)
     pill.appendChild(widthButton)
     document.body.appendChild(pill)
@@ -77,6 +96,18 @@ var zenScript = `
     mode = !mode
     applyMode()
     ensurePill()
+  }
+
+  // Escape exits zen mode \u2014 unless the keystroke belongs to a focused
+  // field (search overlay, inputs, contenteditable), where Escape means
+  // "close that" instead. Registered ONCE for the page (the IIFE runs once
+  // per load; SPA navs do not re-run beforeDOMLoaded), so it never
+  // accumulates.
+  function onKeyDown(e) {
+    if (e.key !== "Escape" || !mode) return
+    var t = e.target
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return
+    exitMode()
   }
 
   function onNav() {
@@ -97,6 +128,7 @@ var zenScript = `
 
   document.addEventListener("nav", onNav)
   document.addEventListener("render", onNav)
+  document.addEventListener("keydown", onKeyDown)
 })()
 `;
 var ReaderZen = () => {

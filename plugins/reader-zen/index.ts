@@ -4,23 +4,31 @@
  *
  * The toolbar button keeps upstream's exact behavior (toggle
  * html[reader-mode], dispatch readermodechange). While reader mode is ON,
- * a floating pill appears with two persistent sub-settings:
+ * a floating pill appears:
  *
+ *   Exit       — turns reader mode off entirely. Escape hatch: in full-width
+ *                zen the left sidebar (and the toolbar reader button inside
+ *                it) is display:none, so without this button the ONLY way
+ *                out is a full page reload. The Escape key exits too.
  *   Italic     — html[data-zen-italic="on"]   → body text renders italic
  *   Full width — html[data-zen-width="full"]  → sidebars leave the layout
  *                entirely (grid columns reclaimed, .page uncapped) and
  *                breadcrumbs hide — the built-in full-width frame's grid,
- *                applied at runtime
+ *                applied at runtime. Defaults ON for first-time visitors
+ *                (no stored preference): entering zen should feel like zen,
+ *                not "the font changed". An explicit toggle-off persists
+ *                ("normal") and is respected from then on.
  *
- * Both persist in localStorage (`quartz-zen-italic`, `quartz-zen-width`)
- * and only take effect under [reader-mode="on"]; the styling lives in the
- * engine's quartz/styles/custom.scss (unlayered, so it beats both the
- * layered base layout and any theme css — see the layering-hazard note
- * there).
+ * Italic/width persist in localStorage (`quartz-zen-italic`,
+ * `quartz-zen-width`) and only take effect under [reader-mode="on"]; the
+ * styling lives in the engine's quartz/styles/custom.scss (unlayered, so it
+ * beats both the layered base layout and any theme css — see the
+ * layering-hazard note there).
  *
  * The script replaces upstream's beforeDOMLoaded entirely (it is a superset
  * of that script: same toggle semantics, same cleanup discipline via
- * window.addCleanup, plus the pill and the persisted zen attributes).
+ * window.addCleanup, plus the pill, the exit affordances and the persisted
+ * zen attributes).
  */
 
 import { ReaderMode as UpstreamReaderMode } from "@quartz-community/reader-mode"
@@ -37,7 +45,9 @@ const zenScript = `
   var italic = false
   var full = false
   try { italic = localStorage.getItem(LS_ITALIC) === "on" } catch (e) {}
-  try { full = localStorage.getItem(LS_WIDTH) === "full" } catch (e) {}
+  // Full width defaults ON: only an explicit stored "normal" opts out, so
+  // first-time entry is actually distraction-free (not fade-only + italic).
+  try { full = localStorage.getItem(LS_WIDTH) !== "normal" } catch (e) {}
 
   function store(key, value) {
     try { localStorage.setItem(key, value) } catch (e) {}
@@ -53,6 +63,12 @@ const zenScript = `
     var on = mode ? "on" : "off"
     document.documentElement.setAttribute("reader-mode", on)
     document.dispatchEvent(new CustomEvent("readermodechange", { detail: { mode: on } }))
+  }
+
+  function exitMode() {
+    mode = false
+    applyMode()
+    ensurePill()
   }
 
   function makeToggle(className, label, isOn, onclick) {
@@ -77,13 +93,23 @@ const zenScript = `
     pill.setAttribute("role", "group")
     pill.setAttribute("aria-label", "Reading options")
 
+    // Exit: the guaranteed escape hatch — in full-width zen the toolbar
+    // reader button is unreachable (its sidebar left the layout).
+    var exitButton = document.createElement("button")
+    exitButton.type = "button"
+    exitButton.className = "zen-toggle zen-exit"
+    exitButton.title = "Exit reader mode (Escape)"
+    exitButton.setAttribute("aria-label", "Exit reader mode")
+    exitButton.textContent = "Exit"
+    exitButton.addEventListener("click", exitMode)
+
     var italicButton = makeToggle("zen-italic", "Italic body text", italic, function () {
       italic = !italic
       store(LS_ITALIC, italic ? "on" : "off")
       applyZen()
       ensurePill()
     })
-    italicButton.textContent = "I"
+    italicButton.textContent = "Italic"
 
     var widthButton = makeToggle("zen-width", "Full width", full, function () {
       full = !full
@@ -91,8 +117,9 @@ const zenScript = `
       applyZen()
       ensurePill()
     })
-    widthButton.textContent = "\\u29E2"
+    widthButton.textContent = "Full width"
 
+    pill.appendChild(exitButton)
     pill.appendChild(italicButton)
     pill.appendChild(widthButton)
     document.body.appendChild(pill)
@@ -105,6 +132,18 @@ const zenScript = `
     mode = !mode
     applyMode()
     ensurePill()
+  }
+
+  // Escape exits zen mode — unless the keystroke belongs to a focused
+  // field (search overlay, inputs, contenteditable), where Escape means
+  // "close that" instead. Registered ONCE for the page (the IIFE runs once
+  // per load; SPA navs do not re-run beforeDOMLoaded), so it never
+  // accumulates.
+  function onKeyDown(e) {
+    if (e.key !== "Escape" || !mode) return
+    var t = e.target
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return
+    exitMode()
   }
 
   function onNav() {
@@ -125,6 +164,7 @@ const zenScript = `
 
   document.addEventListener("nav", onNav)
   document.addEventListener("render", onNav)
+  document.addEventListener("keydown", onKeyDown)
 })()
 `
 

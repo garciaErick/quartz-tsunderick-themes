@@ -362,6 +362,11 @@
 // The zen control pill itself. Fixed, bottom-center, above content; only
 // exists in the DOM while reader mode is on (the script adds/removes it
 // on every nav — SPA-safe).
+//
+// Exit (leftmost, separated by a rule) is the guaranteed escape hatch: in
+// full-width zen the toolbar reader button is display:none with its
+// sidebar, so the pill is the only way out short of reloading (the
+// Escape key works too — see plugins/reader-zen).
 .zen-controls {
   position: fixed;
   bottom: 1.25rem;
@@ -389,11 +394,10 @@
   background: none;
   border: none;
   padding: 0.15rem 0.6rem;
-  min-width: 2rem;
   border-radius: 999px;
   cursor: pointer;
   color: var(--darkgray);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   line-height: 1.4;
   font-family: var(--bodyFont);
 
@@ -406,5 +410,15 @@
     font-style: italic;
     font-family: var(--bodyFont);
     font-weight: 600;
+  }
+
+  &.zen-exit {
+    color: var(--gray);
+    border-right: 1px solid var(--lightgray);
+    border-radius: 999px 0 0 999px;
+
+    &:hover {
+      color: var(--darkgray);
+    }
   }
 }
