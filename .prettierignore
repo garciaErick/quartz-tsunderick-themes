@@ -3,3 +3,8 @@ node_modules
 .quartz-cache
 .quartz
 plugins/*/dist
+
+# fork-owned prose — formatting checks are for code, not content/README
+# (forks inherit this so their site CI stays green without reformatting writing)
+content
+README.md
