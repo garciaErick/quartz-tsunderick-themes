@@ -1,10 +1,9 @@
 import test, { describe, afterEach } from "node:test"
 import assert from "node:assert"
 import { buildLayoutForEntries, resolveGroups } from "./config-loader"
-import { mergeQuartzConfigs } from "./merge-config"
 import { componentRegistry } from "../../components/registry"
 import type { QuartzComponent, QuartzComponentConstructor } from "../../components/types"
-import { PluginJsonEntry, LayoutPosition, QuartzPluginsJson } from "./types"
+import { PluginJsonEntry, LayoutPosition } from "./types"
 
 const makeComponent = (name: string): QuartzComponent => {
   const c = (() => null) as unknown as QuartzComponent
@@ -302,145 +301,5 @@ describe("buildLayoutForEntries with constructors", () => {
       {},
     )
     assert.strictEqual(result.right?.length, 1)
-  })
-})
-
-describe("config layering (mergeQuartzConfigs)", () => {
-  const makeConfig = (overrides?: Partial<QuartzPluginsJson>): QuartzPluginsJson => ({
-    configuration: {},
-    plugins: [],
-    ...overrides,
-  })
-
-  test("child inherits default entries it does not mention", () => {
-    const defaults = makeConfig({
-      plugins: [
-        { source: "./plugins/toc-true-depth", enabled: true, order: 51 },
-        { source: "@quartz-community/explorer", enabled: true },
-      ],
-    })
-    const child = makeConfig({
-      plugins: [{ source: "@quartz-community/explorer", enabled: true }],
-    })
-
-    const merged = mergeQuartzConfigs(defaults, child)
-    const sources = merged.plugins.map((p) => p.source)
-    assert.ok(sources.includes("./plugins/toc-true-depth"))
-    const inherited = merged.plugins.find((p) => p.source === "./plugins/toc-true-depth")
-    assert.strictEqual(inherited?.enabled, true)
-    assert.strictEqual(inherited?.order, 51)
-  })
-
-  test("same-source child entry replaces the default entry wholesale", () => {
-    const defaults = makeConfig({
-      plugins: [
-        {
-          source: "@quartz-community/table-of-contents",
-          enabled: true,
-          order: 50,
-          layout: { position: "right", priority: 30 },
-        },
-      ],
-    })
-    const child = makeConfig({
-      plugins: [
-        {
-          source: "@quartz-community/table-of-contents",
-          enabled: true,
-          order: 50,
-          layout: { position: "right", priority: 10 },
-        },
-      ],
-    })
-
-    const merged = mergeQuartzConfigs(defaults, child)
-    assert.strictEqual(merged.plugins.length, 1)
-    assert.strictEqual(merged.plugins[0].layout?.priority, 10)
-  })
-
-  test("explicit enabled:false child entry disables the inherited default", () => {
-    const defaults = makeConfig({
-      plugins: [{ source: "./plugins/toc-true-depth", enabled: true, order: 51 }],
-    })
-    const child = makeConfig({
-      plugins: [{ source: "./plugins/toc-true-depth", enabled: false }],
-    })
-
-    const merged = mergeQuartzConfigs(defaults, child)
-    assert.strictEqual(merged.plugins.length, 1)
-    assert.strictEqual(merged.plugins[0].enabled, false)
-    // The load path filters on enabled — simulate it:
-    assert.strictEqual(merged.plugins.filter((p) => p.enabled).length, 0)
-  })
-
-  test('source identity ignores the "./" prefix so either spelling overrides', () => {
-    const defaults = makeConfig({
-      plugins: [{ source: "./plugins/toc-true-depth", enabled: true, order: 51 }],
-    })
-    const child = makeConfig({
-      plugins: [{ source: "plugins/toc-true-depth", enabled: true, order: 55 }],
-    })
-
-    const merged = mergeQuartzConfigs(defaults, child)
-    assert.strictEqual(merged.plugins.length, 1)
-    assert.strictEqual(merged.plugins[0].order, 55)
-  })
-
-  test("configuration shallow-merges with child winning per key", () => {
-    const defaults = makeConfig({ configuration: { baseUrl: "engine.dev", locale: "en-US" } })
-    const child = makeConfig({ configuration: { baseUrl: "child.dev" } })
-
-    const merged = mergeQuartzConfigs(defaults, child)
-    assert.strictEqual((merged.configuration as Record<string, unknown>).baseUrl, "child.dev")
-    assert.strictEqual((merged.configuration as Record<string, unknown>).locale, "en-US")
-  })
-
-  test("layout.byPageType merges per page type without clobbering default keys", () => {
-    const defaults = makeConfig({
-      layout: {
-        byPageType: {
-          folder: { exclude: ["reader-mode"], positions: { left: [] } },
-        },
-      },
-    })
-    const child = makeConfig({
-      layout: {
-        byPageType: {
-          folder: { positions: { right: [] } },
-        },
-      },
-    })
-
-    const merged = mergeQuartzConfigs(defaults, child)
-    const folder = merged.layout?.byPageType?.folder
-    assert.deepStrictEqual(folder?.exclude, ["reader-mode"])
-    assert.deepStrictEqual(folder?.positions?.right, [])
-    assert.deepStrictEqual(folder?.positions?.left, [])
-  })
-
-  test("layout.groups merge per key with child winning", () => {
-    const defaults = makeConfig({
-      layout: { groups: { toolbar: { priority: 35, direction: "row" } } },
-    })
-    const child = makeConfig({ layout: { groups: { toolbar: { priority: 20 } } } })
-
-    const merged = mergeQuartzConfigs(defaults, child)
-    assert.strictEqual(merged.layout?.groups?.toolbar?.priority, 20)
-    assert.strictEqual(merged.layout?.groups?.toolbar?.direction, "row")
-  })
-
-  test("child-only entries append after inherited defaults", () => {
-    const defaults = makeConfig({
-      plugins: [{ source: "@quartz-community/explorer", enabled: true }],
-    })
-    const child = makeConfig({
-      plugins: [{ source: "./plugins/site-extra", enabled: true }],
-    })
-
-    const merged = mergeQuartzConfigs(defaults, child)
-    assert.deepStrictEqual(
-      merged.plugins.map((p) => p.source),
-      ["@quartz-community/explorer", "./plugins/site-extra"],
-    )
   })
 })

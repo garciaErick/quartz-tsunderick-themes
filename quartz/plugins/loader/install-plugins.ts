@@ -1,7 +1,32 @@
 #!/usr/bin/env node
+import fs from "fs"
+import path from "path"
+import YAML from "yaml"
 import { installPlugins, parsePluginSource, regeneratePluginIndex } from "./gitLoader.js"
-import { readEffectivePluginsJson } from "./merge-config.js"
-import type { PluginSource } from "./types.js"
+import type { PluginSource, QuartzPluginsJson } from "./types.js"
+
+function resolveConfigPath(): string {
+  const configYamlPath = path.join(process.cwd(), "quartz.config.yaml")
+  const defaultConfigYamlPath = path.join(process.cwd(), "quartz.config.default.yaml")
+  const legacyPluginsJsonPath = path.join(process.cwd(), "quartz.plugins.json")
+  const legacyDefaultPluginsJsonPath = path.join(process.cwd(), "quartz.plugins.default.json")
+
+  if (fs.existsSync(configYamlPath)) return configYamlPath
+  if (fs.existsSync(legacyPluginsJsonPath)) return legacyPluginsJsonPath
+  if (fs.existsSync(defaultConfigYamlPath)) return defaultConfigYamlPath
+  if (fs.existsSync(legacyDefaultPluginsJsonPath)) return legacyDefaultPluginsJsonPath
+  return configYamlPath
+}
+
+function readPluginsJson(): QuartzPluginsJson | null {
+  const configPath = resolveConfigPath()
+  if (!fs.existsSync(configPath)) return null
+  const raw = fs.readFileSync(configPath, "utf-8")
+  if (configPath.endsWith(".yaml") || configPath.endsWith(".yml")) {
+    return YAML.parse(raw)
+  }
+  return JSON.parse(raw)
+}
 
 async function getExternalPluginSources(): Promise<PluginSource[]> {
   try {
@@ -15,9 +40,7 @@ async function getExternalPluginSources(): Promise<PluginSource[]> {
     // fall back to config yaml parsing
   }
 
-  // Layered read (child config over engine default) so inherited default
-  // plugins are installed too — see merge-config.ts for the semantics.
-  const pluginsJson = readEffectivePluginsJson()
+  const pluginsJson = readPluginsJson()
   const entries = pluginsJson?.plugins ?? []
   return entries.filter((entry) => entry.enabled !== false).map((entry) => entry.source)
 }

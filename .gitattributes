@@ -1,2 +1,14 @@
 * text=auto eol=lf
 *.woff2 binary
+
+# Fork-and-sync ours-policies — CONFLICT-TIME DEFENSE ONLY.
+# `merge=ours` drivers do not fire on one-sided changes: if base alone changes
+# one of these files and a fork hasn't re-touched it since its last sync, git
+# resolves cleanly and the fork silently takes base's version. The sync flow
+# (quartz-sync `sync`, or the manual interim procedure) must additionally
+# restore-ours fork-identity paths (README.md, content/index.md) after each
+# merge. Lockfile/.node-version flowing in one-sided is desired.
+content/index.md merge=ours
+README.md merge=ours
+package-lock.json merge=ours
+.node-version merge=ours
