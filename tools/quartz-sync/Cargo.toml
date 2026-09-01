@@ -1,0 +1,24 @@
+[package]
+name = "quartz-sync"
+version = "0.1.0"
+edition = "2024"
+description = "Fork-and-sync toolkit for quartz-tsunderick-themes: semantic 3-way config resolver + git sync orchestration"
+license = "MIT"
+
+# Dependency policy (issue #5, Phase 1c): minimal by design.
+# - serde_yaml_ng: maintained continuation of serde_yaml; `Mapping` preserves
+#   insertion order (key-order preservation for the 3-way merge) and emit is
+#   stable. Isolated behind src/yaml_io.rs so the crate is a one-file swap if
+#   the ecosystem shifts again (Phase 0 decision, deferred and now taken).
+# - serde: not a direct dependency — the merge core operates on `Value`
+#   generically; no schema structs needed.
+[dependencies]
+serde_yaml_ng = "0.10"
+
+[[bin]]
+name = "quartz-sync"
+path = "src/main.rs"
+
+[profile.release]
+lto = true
+strip = true

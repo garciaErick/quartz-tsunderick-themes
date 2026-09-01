@@ -1,0 +1,7 @@
+# Pin the toolchain so forks build the sync tool with the same compiler the
+# base develops against. (The sync != build invariant still holds: this file
+# only matters when you deliberately build the toolkit — `npm ci && npx
+# quartz build` never reads it.)
+[toolchain]
+channel = "1.98.0"
+components = ["rustfmt", "clippy"]

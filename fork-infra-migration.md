@@ -131,7 +131,25 @@ Amended and partially executed the same day:
   all with zero Rust installed (sync ≠ build invariant holds).
 - **Phase 2 (#6) — BLOCKED on driver green light** (child sites are
   hands-off until explicitly approved).
-- **Phase 1-T / Phases 3–4 — deferred** per the resequencing above.
+- **Phase 1-T (toolkit) — implemented locally, pending push.** `tools/quartz-sync`
+  complete: semantic 3-way merge core (20 unit tests incl. the four migration
+  fixtures), `yaml_io.rs` crate boundary with leading-comment capture,
+  `setup`/`driver`/`sync`/`merge` CLI, cargo CI job + dependabot cargo entry,
+  README rewritten fork-first. Proven by a fully local end-to-end simulation
+  (scratch base copy + throwaway `sync-selftest` branch): semantic config
+  resolution inside a real git merge, fork-identity guard against one-sided
+  clobbers, ours-driver registration (**discovery: git ships no built-in
+  `ours` merge driver** — the ours-policies were inert for plain merges until
+  `setup` defines `merge.ours.driver=true`), base additions flow, SHA-range
+  auto-commit, idempotent re-sync. YAML crate decision finalized:
+  `serde_yaml_ng` behind `yaml_io.rs`.
+- **Phase 2 deployment postscript (2026-09-01):** first converted push built
+  green on Cloudflare (423 files) but the deploy step failed — the fork had no
+  `wrangler.jsonc` (engine-era build.sh never generated one; the template was
+  manual-copy only). Fixed with a fork-owned `wrangler.jsonc` (commit
+  `781b9997`); dependabot on forks switched to **bumps-in-base-only** (fork's
+  `dependabot.yml` removed — sync-stable deletion; child dependabot PRs
+  closed, base PRs #3/#9 remain to merge).
 
 Local note: `npm ci` on this machine needs `--ignore-scripts` followed by
 `npm rebuild` (sharp's source-build fallback misfires locally despite the

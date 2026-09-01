@@ -1,126 +1,108 @@
 # quartz-tsunderick-themes
 
-Shared **Quartz v5 engine + design system** for all Tsunderick/Ashfall sites. This repo holds the UI: the Quartz core, house styles, custom plugins (theme switcher with 17 themes, font switcher with self-hosted Operator Mono + JetBrains Mono, folder sorting, graph labels, H1 titles, true-depth TOC), the explorer configuration, the child-site build tooling (`scripts/`), and starter templates for new sites (`templates/`).
+The **forkable base** for every Tsunderick/Ashfall site: the Quartz v5 core, the house design system (theme switcher with 17 themes, font switcher with self-hosted Operator Mono + JetBrains Mono), and the house plugins (`toc-true-depth`, `folder-alpha`, `h1-title`, `graph-labels`, `backlinks-collapse`, `reader-zen`).
 
-Individual websites ("child sites") live in their own repos and contain **only content + configuration** — no build logic. They pull this engine in as a git submodule pinned to an exact commit.
+Each site is a **self-contained fork of this repo**: it carries its own content + identity, builds with plain npm, and pulls house improvements by merging from `base`. This repo is the product — sites fork _this_ code, not upstream.
 
-Based on [jackyzha0/quartz](https://github.com/jackyzha0/quartz) (upstream remote is configured — see [Updating from upstream Quartz](#updating-from-upstream-quartz)).
+Based on [jackyzha0/quartz](https://github.com/jackyzha0/quartz); the upstream remote is configured and upstream merges remain possible but non-driving (see the appendix).
 
-## Child-site contract
-
-A child site repo contains **only site-specific files**:
+## The model in one minute
 
 ```
-my-site/
-├── content/               # markdown (required)
-├── quartz.config.yaml     # identity (pageTitle, baseUrl, colors, fonts) + overrides on top of the engine default (required)
-├── engine/                # git submodule → this repo, pinned SHA (required)
-├── static/                # optional: icon.png, og-image.png → overlaid onto quartz/static/
-├── styles/custom.scss     # optional: APPENDED after the engine's house styles
-├── site-plugins/<name>/   # optional: extra plugins, overlaid onto plugins/
-└── .site-subpath          # optional: serve under a subpath, e.g. "docs" (see below)
+ you ──▶ quartz-tsunderick-themes (base: themes, plugins, quartz core)
+              │
+              │   git fetch base && git merge base/main     (or: quartz-sync sync)
+              ├──▶ 7th-heaven.tsunderick.space ── push ──▶ Cloudflare deploy
+              └──▶ docs.ashfallsoftware.com   ── push ──▶ Cloudflare deploy
 ```
 
-Everything else (Quartz core, plugins, themes, `package.json`, build tooling) comes from the engine at the pinned SHA — so compose logic can never drift from the engine version being composed.
+- **Forks own everything they show**: `content/`, `quartz.config.yaml` identity (pageTitle, baseUrl, colors, fonts, plugin toggles), `README.md`, homepage, `quartz/static/` branding.
+- **The base owns what every site should inherit**: quartz core, house plugins, house styles, `package.json`, CI, `.gitattributes` sync policies.
+- **Push = deploy**: a fork's push to `main` triggers its Cloudflare build.
 
-## The golden rule: fix it in the engine
+## The invariant: sync ≠ build
 
-The entire point of this architecture: **make a change here, and every site gets it on its next engine bump.** Child repos carry only content + identity (`pageTitle`, `baseUrl`, theme, and toggles that genuinely differ). If you ever find yourself editing the same thing in more than one child config, that change belongs in the engine — that's the maintenance model.
+Rust exists only on the **sync** path (`tools/quartz-sync`). Building a site never needs it:
 
-### Config layering
+```
+npm ci && npx quartz plugin install && npx quartz build
+```
 
-The child's `quartz.config.yaml` **overlays** the engine's `quartz.config.default.yaml` (which `build.sh` extracts into every child site on each build). The merge is **replace-per-plugin**, implemented in `quartz/plugins/loader/merge-config.ts`:
+must work on a machine with zero Rust installed. Cloudflare CI never invokes cargo. A fork that never syncs never compiles anything.
 
-| Thing                                    | Rule                                                                                  |
-| ---------------------------------------- | ------------------------------------------------------------------------------------- |
-| Plugin entry with the same source        | child entry replaces the engine's wholesale (`enabled`, `order`, `options`, `layout`) |
-| Engine default the child doesn't mention | inherited as-is — this is how engine-wide fixes ship                                  |
-| Child-only entry                         | appended                                                                              |
-| Opt out of an inherited default          | list it in the child config with `enabled: false`                                     |
-| `configuration`                          | shallow merge, child wins per key                                                     |
-| `layout.groups`                          | merged per group **and per field** — tweak one knob, inherit the rest                 |
-| `layout.byPageType`                      | merged per page type; `positions` per position; `exclude` child wins                  |
+## Syncing base improvements into a site
 
-`./plugins/foo` and `plugins/foo` count as the same source. The CLI (`npx quartz plugin add/remove/list`) still reads and writes the **raw** child file — inherited entries are only visible in the effective config the build loads (and in `npx quartz plugin install`, which uses the layered read so inherited external plugins get installed).
+### The easy way — `quartz-sync`
 
-Current engine-enforced defaults beyond upstream Quartz: `toc-true-depth` (order 51 — true heading levels in the TOC, pairs with the H-prefix styles in house `custom.scss`), `folder-alpha`, `h1-title`, `theme-switcher`, `font-switcher`, `graph-labels`, `backlinks-collapse` (backlinks with a fold-away header, mirroring the TOC), `reader-zen` (reader mode with persistent _italic_ / _full-width_ zen sub-options while reading).
+```
+cd tools/quartz-sync && cargo build --release     # once, on your dev machine
+../..                                            # repo root
+tools/quartz-sync/target/release/quartz-sync setup   # once: registers merge drivers (idempotent)
+tools/quartz-sync/target/release/quartz-sync sync    # fetch base + merge + resolve + commit
+```
 
-**Right-sidebar canonical order** (engine-enforced): TOC (priority 30) → backlinks (50) → graph (60, bottom). The graph is the house `./plugins/graph-labels` wrapper (always-visible node labels); upstream `@quartz-community/graph` stays listed-but-disabled as the visible opt-anchor. Opt out per site: disable the wrapper entry (and re-enable upstream) in the child config, or give either a different `priority` to reposition it.
+`sync` (default ref `base/main`):
 
-**Cascade-layering hazard (house styles vs plugin CSS):** the emitted stylesheet is `@layer quartz-base { …engine + plugin CSS… }` followed by `custom.scss` **unlayered** — and unlayered declarations beat layered ones _regardless of specificity_. A house rule like `.sidebar .toc { flex: 0 0 auto }` will silently kill a plugin's own layered interactive-state rule (`.toc:has(button.toc-header.collapsed) { flex: 0 1 1.4rem }` — this exact bug shipped once: clicking the TOC header toggled classes but the box never shrank). Any house/child style that must coexist with an interactive plugin state (`.collapsed`, `[reader-mode=on]`, …) needs an explicit stand-down guard (`:not(:has(…collapsed))`) or high-specificity state-scoped selectors — see the guards throughout `quartz/styles/custom.scss`. The reader-mode sidebar-fade gets an unlayered baseline there for the same reason (a theme css once left the sidebars stuck visible with reader mode on).
+1. fetches `base` and merges `--no-commit --no-ff`,
+2. resolves a conflicted `quartz.config.yaml` **semantically** — per-key 3-way: your intentional changes win, base's changes flow where you didn't touch, both-changed → yours + a warning naming the path,
+3. **fork-identity guard**: keeps your `README.md` and `content/index.md` even when base alone changed them (`merge=ours` attributes only fire on conflicts — one-sided changes would otherwise flow in silently),
+4. runs `npm install` to reconcile the lockfile when `package.json` changed (set `QUARTZ_SYNC_SKIP_NPM=1` to skip),
+5. auto-commits clean syncs as `sync: base <old>..<new>`; anything it can't resolve exits nonzero with guidance (git's conflict markers are left in place; `git merge --abort` rolls back).
 
-**H1 in the TOC:** style guides allow exactly one top-level H1 per page, and `h1-title` splices it out of the body as the article title before the TOC transformer runs — so `toc-true-depth` prepends it back as a synthetic first entry (`H1 <title>`, linking to the shared `#article-title` anchor that `h1-title`'s ArticleTitle renders; the TOC scroll-spy highlights it at the page top). Pages with no other TOC entries keep their no-TOC rendering. Opt out per site with `includeH1: false` on the `./plugins/toc-true-depth` entry.
-
-**Per-site identity** (child-owned, never engine): `pageTitle`/`baseUrl`, fonts/colors, `static/icon.png` + `static/og-image.png` branding.
-
-### Shipping an engine-wide change
-
-1. Implement it here (plugin, house style, or a new `quartz.config.default.yaml` entry), add tests, `npm test && npm run check`.
-2. Commit + push **this** repo — children can only fetch engine commits that exist on `main`.
-3. In each child: `bash engine/scripts/update-engine.sh`, review, push the child. That push **is** the deploy.
-
-Rollback stays trivial: the child's bump is a normal commit (`git revert HEAD`), so a bad engine change unwinds per-site without touching the others.
-
-## Composing and building
-
-### First-time setup (fresh clone)
-
-A fresh clone has an empty `engine/` — submodules store a pointer, not files:
+### The manual way (no tooling required)
 
 ```bash
-git submodule update --init    # clones the engine at the pinned commit
+git fetch base
+git merge base/main --no-commit
+# resolve quartz.config.yaml by hand if base touched it
+git restore --source=HEAD --staged --worktree -- README.md content/index.md   # only if base changed them
+npm install                      # if package.json changed
+git commit
 ```
 
-Builds run on the node version pinned by the child's `.node-version`. With mise:
+### What auto-resolves vs. what's manual
+
+| Path | Behavior |
+| --- | --- |
+| `quartz.config.yaml` | semantic 3-way (driver `quartz-config`, registered by `setup`) |
+| `README.md`, `content/index.md` | always yours (`merge=ours` driver + sync guard) |
+| `package-lock.json`, `.node-version` | ours on conflict; base's one-sided bumps flow in (desired) |
+| `quartz/styles/custom.scss` | git-native merge — same-region edits on both sides are the one known manual case |
+| everything else | normal git merge |
+
+**Absence is deletion.** Fork configs are full-ownership documents: a key missing from your config is an intentional removal, not "inherit from base" (that was the old engine's layering, now retired). To keep a key, leave it in the file.
+
+## The golden rule: fix it in the base
+
+If you find yourself editing the same thing in more than one fork, it belongs here. Ship it in the base, then one `sync` per site. Forks stay tiny: content + identity.
+
+## Creating a new site
 
 ```bash
-mise exec node@22.16.0 -- bash engine/scripts/build.sh --serve
+git clone https://github.com/garciaErick/quartz-tsunderick-themes.git my-site && cd my-site
+git remote rename origin base                      # the sync source
+git remote add origin git@github.com:YOU/my-site.git
 ```
 
-`build.sh` warns (but does not fail) when the running node major differs from the pin.
+Then make it yours:
 
-Run from the child site:
+- `content/` — markdown, starting with `index.md`
+- `quartz.config.yaml` — edit the **identity**: `pageTitle`, `baseUrl`, `locale`, `theme.typography`, `theme.colors`, the theme-switcher `themes` menu; branding → `quartz/static/icon.png` + `og-image.png`
+- `README.md`, `content/index.md` — yours from the start
+
+Build locally:
 
 ```bash
-bash engine/scripts/build.sh             # compose + install + build → ./public
-bash engine/scripts/build.sh --serve     # hot-reload dev server (port 8080)
+mise exec node@$(cat .node-version) -- npx quartz build --serve   # http://localhost:8080
 ```
 
-What it does:
-
-1. Extracts engine files into the site root (skipping the engine's own `content/`, `quartz.config.yaml`, `README.md`, `docs/`, CI, `scripts/`, and `templates/` — the child's own files always win).
-2. Overlays child pieces: `static/` → `quartz/static/`, `site-plugins/` → `plugins/`, appends `styles/custom.scss`.
-3. `npm ci` (cached by lockfile hash), `npx quartz plugin install`.
-4. `npx quartz build` → emits `./public` at the site root (this is what gets deployed).
-5. Copies `quartz/static/` assets into the output (Quartz's Static emitter uses a gitignore-aware glob, which can't see the engine-extracted `quartz/` in child sites) and, for subpath sites, mirrors the 404 page to the output root.
-
-Cloudflare Workers build command for child sites:
+Deploy: connect the repo to a Cloudflare Workers build with
 
 ```
-git fetch --unshallow && git submodule update --init && bash engine/scripts/build.sh
+git fetch --unshallow && npm ci && npx quartz plugin install && npx quartz build
 ```
 
-### Serving under a subpath (e.g. `domain.com/docs`)
-
-Add a `.site-subpath` file to the child root containing a single path segment (e.g. `docs`), and set the config's `baseUrl` to the full `domain.com/docs`. Quartz v5 derives the page basePath from the baseUrl's path, so links, the SPA router, and the 404 page all honor the prefix. After building, `build.sh` restructures the output so the deployable manifest literally contains `docs/index.html` etc.:
-
-```
-public/
-└── docs/
-    ├── index.html
-    └── ...
-```
-
-Notes:
-
-- The Cloudflare build command is unchanged — subpath sites are configured by the file, not the command.
-- Local `--serve` deliberately previews at `http://localhost:8080/` **without** the prefix (Quartz renders an empty basePath in serve mode).
-- Disable the `cname` emitter in a subpath site's config (a CNAME file only makes sense for a root domain).
-- `update-engine.sh` works unchanged from a subdirectory of a monorepo — the child site _is_ its directory.
-
-### Cloudflare Workers deployment (wrangler config)
-
-Workers created through the dashboard with an assets directory get their deploy config injected by Cloudflare. If your worker was created without one (or deploy fails with _"Could not detect a directory containing static files"_), commit a minimal `wrangler.jsonc` in the child root — see `templates/wrangler.jsonc`:
+and, if the Worker wasn't created through the dashboard with an assets directory, commit a fork-owned `wrangler.jsonc`:
 
 ```jsonc
 {
@@ -128,90 +110,74 @@ Workers created through the dashboard with an assets directory get their deploy 
   "compatibility_date": "2026-08-21",
   "assets": {
     "directory": "./public",
-    "not_found_handling": "404-page",
-  },
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
 }
 ```
 
-## Updating a site's engine (manual bump)
+## House plugins & styles (what forks inherit)
 
-Run from the child site:
+Engine-enforced defaults beyond upstream Quartz: `toc-true-depth` (order 51 — true heading levels in the TOC, pairs with the H-prefix styles in house `custom.scss`), `folder-alpha`, `h1-title`, `theme-switcher`, `font-switcher`, `graph-labels`, `backlinks-collapse` (backlinks with a fold-away header, mirroring the TOC), `reader-zen` (reader mode with persistent _italic_ / _full-width_ zen sub-options while reading).
 
-```bash
-bash engine/scripts/update-engine.sh     # fetches latest engine main, shows incoming commits, commits the bump
-# review with: git show HEAD --submodule=log   — then push to deploy
+**Right-sidebar canonical order** (house-enforced): TOC (priority 30) → backlinks (50) → graph (60, bottom). The graph is the house `./plugins/graph-labels` wrapper (always-visible node labels); upstream `@quartz-community/graph` stays listed-but-disabled as the visible opt-anchor. Opt out per site: disable the wrapper entry (and re-enable upstream), or change a `priority`.
+
+**Cascade-layering hazard (house styles vs plugin CSS):** the emitted stylesheet is `@layer quartz-base { …core + plugin CSS… }` followed by `custom.scss` **unlayered** — and unlayered declarations beat layered ones _regardless of specificity_. A house rule like `.sidebar .toc { flex: 0 0 auto }` will silently kill a plugin's layered interactive-state rule (`.toc:has(button.toc-header.collapsed) { flex: 0 1 1.4rem }` — this exact bug shipped once). Any style that must coexist with an interactive plugin state (`.collapsed`, `[reader-mode=on]`, …) needs an explicit stand-down guard or high-specificity state-scoped selectors — see the guards throughout `quartz/styles/custom.scss`.
+
+**H1 in the TOC:** `h1-title` splices the page's single H1 out of the body as the article title before the TOC transformer runs — so `toc-true-depth` prepends it back as a synthetic first entry (`H1 <title>`, linking to the shared `#article-title` anchor). Pages with no other TOC entries keep their no-TOC rendering. Opt out with `includeH1: false` on the `./plugins/toc-true-depth` entry.
+
+**Serving under a subpath:** Quartz v5 derives the page basePath from the config `baseUrl` path (`domain.com/docs`), so links/SPA/404 honor the prefix natively. The engine-era output re-structuring (`public/<subpath>/index.html`) retired with `build.sh` — if a deploy target literally needs that layout, post-process the build.
+
+## The sync toolkit (`tools/quartz-sync`)
+
+Single Rust crate, deliberately tiny (`serde_yaml_ng` only, isolated behind `src/yaml_io.rs` so the YAML crate is a one-file swap):
+
+```
+src/merge.rs    pure semantic 3-way core (no I/O; 20 unit tests, incl. the
+                four migration fixtures: base-adds-plugin · base-fixes-
+                options+fork-identity · fork-disables-inherited · both-touch-
+                theme-switcher)
+src/yaml_io.rs  parse/emit boundary + leading-comment (schema directive) capture
+src/driver.rs   git merge-driver entrypoint (`driver %O %A %B %P`)
+src/sync.rs     fetch/merge/resolve/guard/lockfile/auto-commit orchestration
+src/setup.rs    idempotent driver registration (quartz-config + ours — note:
+                git ships NO built-in "ours" driver; `setup` defines it)
 ```
 
-The pinned SHA lives in the child's git tree, so every deployment is reproducible and bumps are reviewable commits (`git revert HEAD` rolls one back).
+`setup` also registers the conventional `ours` merge driver (`merge.ours.driver = true`) — without it the `.gitattributes` ours-policies are inert for plain `git merge`.
 
-### Testing engine changes against a real site (without committing)
+## Upstream Quartz merges (appendix — possible, not driving)
 
-```bash
-cd my-site/engine
-git checkout my-wip-branch          # any local branch or detached experiment
-cd ..
-bash engine/scripts/build.sh --serve   # serves the site with your WIP engine
-# happy? commit+push in engine/, then bash engine/scripts/update-engine.sh
-```
-
-## Creating a new site
-
-```bash
-git clone git@github.com:YOU/my-site.git && cd my-site
-git submodule add -b main https://github.com/garciaErick/quartz-tsunderick-themes.git engine
-cp engine/templates/gitignore .gitignore
-cp engine/templates/quartz.config.yaml quartz.config.yaml
-printf 'v22.16.0\n' > .node-version
-```
-
-Then make it yours:
-
-- `content/` — write markdown, starting with `index.md`
-- `quartz.config.yaml` — edit the marked **identity block** (`pageTitle`, `baseUrl`, fonts, colors); trim the theme-switcher menu if you want fewer than 17 themes
-- `static/icon.png` + `static/og-image.png` — branding
-
-Preview with `bash engine/scripts/build.sh --serve`, commit, and connect the repo to a new Cloudflare Workers build with the build command above.
-
-Starter files live in `templates/` (`quartz.config.yaml`, `gitignore`) and are versioned with the engine — so new sites always start from the current house defaults.
-
-## Updating from upstream Quartz
-
-This repo keeps the full Quartz history and its merge-base, so upstream updates are plain merges:
+This repo keeps the full Quartz history, so upstream updates are plain merges:
 
 ```bash
 git fetch upstream
 git merge upstream/v5
-# resolve conflicts (quartz/ core is unmodified, so this is usually clean)
+# resolve conflicts (quartz/ core is pristine, so this is usually clean)
 npm ci && npx quartz plugin install && npm test && npm run check
-git push
+git push            # forks receive it via their next sync
 ```
 
-Then run `bash engine/scripts/update-engine.sh` in each child site to pick it up.
+## Base-only development
 
-## Engine-only development
-
-The engine has its own placeholder page (`content/index.md`, a theme preview). `npx quartz build --serve` here serves it — handy for trying out new themes and fonts before any site consumes them. (The compose scripts intentionally refuse to run outside a child site.)
+The base self-hosts a theme preview (`content/index.md`): `npx quartz build --serve` here. `npm test && npm run check` gate the core; `cd tools/quartz-sync && cargo fmt --check && cargo clippy --all-targets -- --deny warnings && cargo test` gates the toolkit.
 
 ## Troubleshooting
 
-### `sharp: Attempting to build from source via node-gyp` / `Please add node-gyp to your dependencies`
+### `sharp: Attempting to build from source via node-gyp`
 
-sharp ships prebuilt binaries (the `@img/sharp-*` optional deps) and never needs to compile on stock systems. On machines with a **system-wide libvips** (check: `pkg-config --modversion vips-cpp` — e.g. Arch's `libvips` package), sharp's install script detects it, rejects the prebuilt, and insists on compiling against the global copy — which fails without a node-gyp toolchain. Worse, the `npm ci` failure rollback scrubs `node_modules`, which looks like packages "vanishing".
-
-Since engine commit `99e484b`, `build.sh` exports `SHARP_IGNORE_GLOBAL_LIBVIPS=1` to force the bundled prebuilt, so current pins are immune. Workaround on an older pin:
+sharp ships prebuilt binaries (the `@img/sharp-*` optional deps). On machines with a **system-wide libvips** (`pkg-config --modversion vips-cpp`, e.g. Arch), sharp's install script detects it, rejects the prebuilt, and insists on compiling — which fails without node-gyp. Workaround:
 
 ```bash
-SHARP_IGNORE_GLOBAL_LIBVIPS=1 bash engine/scripts/build.sh
+SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm ci
 ```
 
-### Native dep install failures under a different node than `.node-version`
+(`npm ci --ignore-scripts && npm rebuild` also works — the module itself is fine; only its check script misfires.)
 
-Symptoms are misleading — sharp demanding a source build, esbuild binary mismatches, odd ABI errors. Run the pinned version instead (build.sh warns on major mismatch):
+### Native dep failures under the wrong node
 
-```bash
-mise exec node@$(cat .node-version) -- bash engine/scripts/build.sh
-```
+Run the pinned version: `mise exec node@$(cat .node-version) -- npm ci`.
 
 ### `ERESOLVE could not resolve` (`rehype-typst` peer conflict) — latent
 
-The engine pins `@myriaddreamin/rehype-typst@^0.6.0`, while `@quartz-community/latex@0.1.0` declares `rehype-typst@^0.5.0` as an optional peer. The engine's `.npmrc` (extracted into every child site) sets `legacy-peer-deps=true`, which suppresses the conflict during `npm ci`. Harmless today — but if you remove that flag or bump either package, expect `npm ci` to refuse until the versions re-align.
+This repo pins `@myriaddreamin/rehype-typst@^0.6.0`; `@quartz-community/latex@0.1.0` declares `rehype-typst@^0.5.0` as an optional peer. `.npmrc` sets `legacy-peer-deps=true`, suppressing the conflict. Harmless today — removing the flag or bumping either package will resurface it until versions re-align.

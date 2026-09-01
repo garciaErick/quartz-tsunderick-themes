@@ -35,3 +35,29 @@ jobs:
 
       - name: Build engine preview
         run: npx quartz build
+
+  toolchain:
+    runs-on: ubuntu-latest
+    name: quartz-sync (cargo)
+    defaults:
+      run:
+        working-directory: tools/quartz-sync
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tools/quartz-sync
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- --deny warnings
+
+      - name: Tests
+        run: cargo test

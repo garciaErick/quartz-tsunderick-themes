@@ -18,3 +18,12 @@ updates:
         applies-to: "version-updates"
         patterns:
           - "*"
+  - package-ecosystem: "cargo"
+    directory: "/tools/quartz-sync"
+    schedule:
+      interval: "weekly"
+    groups:
+      cargo-dependencies:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
