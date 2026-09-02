@@ -143,6 +143,18 @@ Amended and partially executed the same day:
   `setup` defines `merge.ours.driver=true`), base additions flow, SHA-range
   auto-commit, idempotent re-sync. YAML crate decision finalized:
   `serde_yaml_ng` behind `yaml_io.rs`.
+- **Addendum (2026-09-02): the fleet grew — `family.tsunderick.space`** (a
+  monorepo: root landing worker + Quartz child at `docs/` served under the
+  `/docs` subpath, route-owned by a second worker; engine pinned `9556d14`).
+  The fork model extends via **subtree merges**: the conversion grafts base
+  into `docs/` (`git merge --allow-unrelated-histories -Xsubtree=docs
+base/main` — conflicts surface as `docs/…` paths; the root is structurally
+  untouchable by base), ongoing syncs use `quartz-sync sync --prefix docs`
+  (subtree-mapped merge, prefixed config resolution + identity guard, npm
+  install inside the prefix). The engine-era `.site-subpath` output
+  restructuring is re-owned fork-side as a mini `docs/scripts/build.sh`
+  (quartz build → copy `public/` into `dist/docs/`, wrangler assets →
+  `./dist`). Proven by the monorepo e2e simulation alongside the flat one.
 - **Phase 2 deployment postscript (2026-09-01):** first converted push built
   green on Cloudflare (423 files) but the deploy step failed — the fork had no
   `wrangler.jsonc` (engine-era build.sh never generated one; the template was
