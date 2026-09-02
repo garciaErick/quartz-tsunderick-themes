@@ -13,8 +13,17 @@ Based on [jackyzha0/quartz](https://github.com/jackyzha0/quartz); the upstream r
               │
               │   git fetch base && git merge base/main     (or: quartz-sync sync)
               ├──▶ 7th-heaven.tsunderick.space ── push ──▶ Cloudflare deploy
-              └──▶ docs.ashfallsoftware.com   ── push ──▶ Cloudflare deploy
+              ├──▶ docs.ashfallsoftware.com   ── push ──▶ Cloudflare deploy
+              └──▶ family.tsunderick.space/docs (monorepo subtree) ── push ──▶ deploy
 ```
+
+The fleet today:
+
+| Site | Flavor | Sync command |
+| --- | --- | --- |
+| `7th-heaven.tsunderick.space` | flat fork (repo root) | `quartz-sync sync` |
+| `docs.ashfallsoftware.com` | flat fork (repo root) | `quartz-sync sync` |
+| `family.tsunderick.space/docs` | monorepo subtree fork at `docs/` | `quartz-sync sync --prefix docs` |
 
 - **Forks own everything they show**: `content/`, `quartz.config.yaml` identity (pageTitle, baseUrl, colors, fonts, plugin toggles), `README.md`, homepage, `quartz/static/` branding.
 - **The base owns what every site should inherit**: quartz core, house plugins, house styles, `package.json`, CI, `.gitattributes` sync policies.
@@ -60,6 +69,27 @@ npm install                      # if package.json changed
 git commit
 ```
 
+### Monorepo sites (`--prefix`)
+
+When the fork lives in a **subdirectory of a monorepo** (like `family.tsunderick.space`'s `docs/`), the base tree is subtree-mapped into that directory and everything else in the monorepo is structurally untouchable by base:
+
+```bash
+quartz-sync sync --prefix docs      # run from the MONOREPO ROOT
+```
+
+Same flow as the flat `sync`, but the merge runs with `-Xsubtree=docs`, the semantic config resolution and identity guard operate on `docs/quartz.config.yaml` / `docs/content/index.md` / `docs/README.md`, `npm install` runs inside `docs/`, and base's files can only ever land under `docs/`. Manual equivalent:
+
+```bash
+git fetch base
+git merge -Xsubtree=docs --no-commit --no-ff base/main
+# resolve docs/quartz.config.yaml by hand if base touched it
+git restore --source=HEAD --staged --worktree -- docs/README.md docs/content/index.md   # if base changed them
+(cd docs && npm install)           # if package.json changed
+git commit
+```
+
+Monorepo subpath sites also carry a fork-owned build script (e.g. `docs/scripts/build.sh`) that copies the flat `public/` output into `dist/docs/` so the worker's `/docs*` route sees the right layout — see "Creating a new site" below.
+
 ### What auto-resolves vs. what's manual
 
 | Path | Behavior |
@@ -72,11 +102,39 @@ git commit
 
 **Absence is deletion.** Fork configs are full-ownership documents: a key missing from your config is an intentional removal, not "inherit from base" (that was the old engine's layering, now retired). To keep a key, leave it in the file.
 
+### When a sync conflicts
+
+Things that **can never conflict**: your `README.md`, homepage, `content/`, branding (identity guard), your plugin additions/deletions (fork wins), base's new files (they just arrive).
+
+**`quartz.config.yaml`** is the hotspot and it's *auto*-resolved — you'll see warnings like:
+
+```
+⚠ $.configuration.pageTitle: both sides changed since the merge base; kept the fork's version (fork wins)
+```
+
+That's the resolver telling you exactly what it kept and why; no action needed. Real conflict markers only appear for structural surprises (duplicate plugin sources) or the **one known manual case**: same-region edits to `quartz/styles/custom.scss` on both sides.
+
+If a sync exits nonzero and leaves markers:
+
+```bash
+git diff --name-only --diff-filter=U     # what's unresolved
+# edit the file(s) your way, then:
+git add <file> && git commit
+# or bail out entirely — nothing is lost:
+git merge --abort
+```
+
+Already committed something bad? `git revert -m 1 HEAD` — and the previous deployment stays live on Cloudflare until you push the fix.
+
 ## The golden rule: fix it in the base
 
 If you find yourself editing the same thing in more than one fork, it belongs here. Ship it in the base, then one `sync` per site. Forks stay tiny: content + identity.
 
 ## Creating a new site
+
+Two flavors. Identity is fork-owned from day one in both, so it can never conflict with base.
+
+### Flavor A — own repo, repo root (like 7th-heaven / ashfall)
 
 ```bash
 git clone https://github.com/garciaErick/quartz-tsunderick-themes.git my-site && cd my-site
@@ -86,17 +144,22 @@ git remote add origin git@github.com:YOU/my-site.git
 
 Then make it yours:
 
-- `content/` — markdown, starting with `index.md`
-- `quartz.config.yaml` — edit the **identity**: `pageTitle`, `baseUrl`, `locale`, `theme.typography`, `theme.colors`, the theme-switcher `themes` menu; branding → `quartz/static/icon.png` + `og-image.png`
-- `README.md`, `content/index.md` — yours from the start
+- `content/` — markdown, starting with `index.md` (replace base's preview homepage)
+- `quartz.config.yaml` — edit the **identity**: `pageTitle`, `baseUrl`, `locale`, `theme.typography`, `theme.colors`, the theme-switcher `themes` menu
+- `README.md` — yours; branding → `quartz/static/icon.png` + `og-image.png`
 
-Build locally:
+```bash
+git add -A && git commit -m "site: claim identity"
+git push -u origin main                            # after creating the empty repo
+```
+
+The clone point is the merge base, so every future sync is a plain related merge — no conversion ceremony needed. Build locally:
 
 ```bash
 mise exec node@$(cat .node-version) -- npx quartz build --serve   # http://localhost:8080
 ```
 
-Deploy: connect the repo to a Cloudflare Workers build with
+Deploy: connect the repo to a Cloudflare Workers build (root directory `/`) with
 
 ```
 git fetch --unshallow && npm ci && npx quartz plugin install && npx quartz build
@@ -115,6 +178,37 @@ and, if the Worker wasn't created through the dashboard with an assets directory
   }
 }
 ```
+
+### Flavor B — subdirectory of a monorepo (like family.tsunderick.space/docs)
+
+Graft the base tree into your chosen subdirectory with git's subtree mapping — the monorepo root is then **structurally untouchable by base** forever:
+
+```bash
+cd my-monorepo
+git remote add base https://github.com/garciaErick/quartz-tsunderick-themes.git
+git fetch base
+git merge --allow-unrelated-histories -Xsubtree=wiki base/main
+```
+
+A **fresh** subdirectory lands with zero conflicts — the whole base tree simply appears under `wiki/`. Claim identity inside `wiki/` exactly as in Flavor A, then register the drivers at the monorepo root:
+
+```bash
+wiki/tools/quartz-sync/target/release/quartz-sync setup   # after cargo build --release
+git add .gitattributes && git commit -m "setup: quartz-config merge driver"
+```
+
+Future syncs: `quartz-sync sync --prefix wiki` (or the manual `-Xsubtree=wiki` recipe above).
+
+**Serving under a path** (`domain.com/wiki`) rather than a subdomain? Quartz derives all URLs from `baseUrl` (`domain.com/wiki`) natively, but the worker's route serves assets by URL path — so the deployable tree must literally contain `wiki/index.html`. Add a fork-owned build script (`wiki/scripts/build.sh`):
+
+```bash
+npx quartz build
+rm -rf dist && mkdir -p dist/wiki && cp -r public/. dist/wiki/
+```
+
+…point `wiki/wrangler.jsonc` `assets.directory` at `./dist`, and append `&& bash scripts/build.sh` to the build command. Own subdomain → skip all of this; the plain build works.
+
+Deploy: Cloudflare Workers build with **root directory `/wiki`** and the npm triple build command above.
 
 ## House plugins & styles (what forks inherit)
 
